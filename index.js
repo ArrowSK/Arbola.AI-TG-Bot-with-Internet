@@ -43,8 +43,8 @@ bot.help((ctx) => {
 });
 
 //Bot on Image command
-bot.command("image", async (ctx) => {
-  const text = ctx.message.text?.replace("/image", "")?.trim().toLowerCase();
+bot.command("picture", async (ctx) => {
+  const text = ctx.message.text?.replace("/picture", "")?.trim().toLowerCase();
   logger.info(`Image: ${ctx.from.username || ctx.from.first_name}: ${text}`);
   if (text) {
     const res = await getImage(text);
@@ -77,8 +77,8 @@ bot.command("image", async (ctx) => {
 
 //Bot on ask command
 
-bot.command("ask", async (ctx) => {
-  const text = ctx.message.text?.replace("/ask", "")?.trim().toLowerCase();
+bot.command("know", async (ctx) => {
+  const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
 
   logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
@@ -106,8 +106,8 @@ bot.command("ask", async (ctx) => {
 });
 
 // Bot on en command
-bot.command("en", async (ctx) => {
-  const text = ctx.message.text?.replace("/en", "")?.trim().toLowerCase();
+bot.command("gram", async (ctx) => {
+  const text = ctx.message.text?.replace("/gram", "")?.trim().toLowerCase();
 
   if (text) {
     ctx.sendChatAction("typing");
@@ -128,8 +128,8 @@ bot.command("en", async (ctx) => {
   }
 });
 
-bot.command("yo", async (ctx) => {
-  const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
+bot.command("yos", async (ctx) => {
+  const text = ctx.message.text?.replace("/yos", "")?.trim().toLowerCase();
   logger.info(`Joke: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
   const ress = await axios.get("https://api.yomomma.info/");
