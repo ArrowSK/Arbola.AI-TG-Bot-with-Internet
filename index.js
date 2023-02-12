@@ -88,7 +88,7 @@ bot.command("ask", async (ctx) => {
     if (res) {
       ctx.telegram.sendMessage(
         ctx.message.chat.id,
-        `${res}\n\n\nThank you for asking!\n`,
+        `${res}`,
         {
           reply_to_message_id: ctx.message.message_id,
         }
