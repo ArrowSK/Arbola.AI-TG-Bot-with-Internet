@@ -42,7 +42,7 @@ const getChat = async (text) => {
 const correctEngish = async (text) => {
   try {
     const response = await openai.createCompletion({
-      model: "text-davinci-003",
+      model: "text-curie-001",
       prompt: `Correct this to standard English: /n${text}`,
       temperature: 0,
       max_tokens: 1000,
