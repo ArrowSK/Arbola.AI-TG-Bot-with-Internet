@@ -25,10 +25,10 @@ const getImage = async (text) => {
 const getChat = async (text) => {
   try {
     const response = await openai.createCompletion({
-      model: "text-davinci-003",
+      model: "text-curie-001",
       prompt: text,
       temperature: 0,
-      max_tokens: 500,
+      max_tokens: 1000,
     });
 
     return response.data.choices[0].text;
