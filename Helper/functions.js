@@ -13,7 +13,7 @@ const getImage = async (text) => {
     const response = await openai.createImage({
       prompt: text,
       n: 1,
-      size: "512x512",
+      size: "1024x1024",
     });
 
     return response.data.data[0].url;
@@ -27,7 +27,7 @@ const getChat = async (text) => {
     const response = await openai.createCompletion({
       model: "text-curie-001",
       prompt: text,
-      temperature: 0,
+      temperature: 0.3,
       max_tokens: 1000,
     });
 
@@ -44,7 +44,7 @@ const correctEngish = async (text) => {
     const response = await openai.createCompletion({
       model: "text-curie-001",
       prompt: `Correct this to standard English: /n${text}`,
-      temperature: 0,
+      temperature: 0.1,
       max_tokens: 1000,
     });
 
