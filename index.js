@@ -26,10 +26,11 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
+  const allowedUsernames = ["artemskov", "OlgaKov"];
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
-    if (ctx.chat.username === "artemskov") {
+    if (allowedUsernames.includes(ctx.chat.username)) {
       logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
       ctx.reply(
         "Welcome To AI Bot 🧿 \n\nCommands 👾 \n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
