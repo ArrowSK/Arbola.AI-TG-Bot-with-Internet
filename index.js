@@ -24,21 +24,20 @@ const bot = new Telegraf(process.env.TG_API);
 
 
 // Bot on start
+
 bot.start(async (ctx) => {
   if (ctx.chat.type === "group") {
-    logger.info(`Bot started in group: ${ctx.chat.title}`);
+    logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
     if (ctx.chat.username === "artemskov") {
-      logger.info(`Bot started by ${ctx.chat.username || ctx.chat.first_name}`);
+      logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
+      ctx.reply(
+        "Welcome To AI Bot 🧿 \n\nCommands 👾 \n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
+      );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
     }
   }
-});
-
-  ctx.reply(
-    "Welcome To AI Bot 🧿 \n\nCommands 👾 \n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
-  );
 });
 
 bot.help((ctx) => {
