@@ -38,7 +38,7 @@ bot.start(async (ctx) => {
 
 bot.help((ctx) => {
   ctx.reply(
-    "\nCommands 👾 \n\n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nContract @Chetan_Baliyan if you want to report any BUG or change in features "
+    "\nCommands 👾 \n\n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
   );
 });
 
