@@ -80,77 +80,41 @@ bot.command("picture", async (ctx) => {
   }
 });
 
-//Bot on know command
-
-const Bottleneck = require('bottleneck');
-const limiter = new Bottleneck({
-  reservoir: 10,
-  reservoirRefreshAmount: 10,
-  reservoirRefreshInterval: 60 * 1000,
-});
-
-bot.on('message', async (ctx) => {
-  const replyMessage = ctx.message.reply_to_message;
-  if (replyMessage && replyMessage.from.id === bot.botInfo.id) {
-    const text = ctx.message.text?.trim().toLowerCase();
-    
-    ctx.sendChatAction("typing");
-
-    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-
-    try {
-      const res = await limiter.schedule(() => getChat(text));
-      if (res) {
-        ctx.telegram.sendMessage(
-          ctx.message.chat.id,
-          `${res}`,
-          {
-            reply_to_message_id: replyMessage.message_id,
-          }
-        );
-      }
-    } catch (err) {
-      if (err instanceof Bottleneck.BottleneckError) {
-        ctx.reply("Sorry, I'm too tired. Please let me rest for a while...");
-      } else {
-        logger.error(`Error: ${err}`);
-        ctx.reply("Sorry, something went wrong. Please try again later.");
-      }
-    }
-  }
-});
+//Bot on ask command
 
 bot.command("know", async (ctx) => {
   const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
-  
-  ctx.sendChatAction("typing");
 
   logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
   if (text) {
-    try {
-      const res = await limiter.schedule(() => getChat(text));
-      if (res) {
-        ctx.telegram.sendMessage(
-          ctx.message.chat.id,
-          `${res}`,
-          {
-            reply_to_message_id: ctx.message.message_id,
-          }
-        );
-      }
-    } catch (err) {
-      if (err instanceof Bottleneck.BottleneckError) {
-        ctx.reply("Sorry, I'm too tired. Please let me rest for a while...");
-      } else {
-        logger.error(`Error: ${err}`);
-        ctx.reply("Sorry, something went wrong. Please try again later.");
-      }
+    ctx.sendChatAction("typing");
+    const res = await getChat(text);
+    if (res) {
+      ctx.telegram.sendMessage(
+        ctx.message.chat.id,
+        `${res}`,
+        {
+          reply_to_message_id: ctx.message.message_id,
+        }
+      );
+    }
+  } else if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
+    ctx.sendChatAction("typing");
+    const res = await getChat(ctx.message.reply_to_message.text);
+    if (res) {
+      ctx.telegram.sendMessage(
+        ctx.message.chat.id,
+        `${res}`,
+        {
+          reply_to_message_id: ctx.message.reply_to_message.message_id,
+        }
+      );
     }
   } else {
     ctx.telegram.sendMessage(
       ctx.message.chat.id,
-      "Please ask anything after /know",
+      "Please provide some text to know or reply to a message containing text to know",
       {
         reply_to_message_id: ctx.message.message_id,
       }
