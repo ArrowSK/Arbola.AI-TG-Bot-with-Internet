@@ -82,7 +82,7 @@ bot.command("picture", async (ctx) => {
 
 //Bot on know command
 
-bbot.command("know", async (ctx) => {
+bot.command("know", async (ctx) => {
   const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
   logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
   
