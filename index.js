@@ -102,11 +102,24 @@ bot.command("know", async (ctx) => {
   } else {
     ctx.telegram.sendMessage(
       ctx.message.chat.id,
-      "Please ask anything after /ask",
+      "Please ask anything after /know",
       {
         reply_to_message_id: ctx.message.message_id,
       }
     );
+  }
+});
+
+bot.on("message", async (ctx) => {
+  const text = ctx.message.text?.toLowerCase();
+  const replyToMessage = ctx.message.reply_to_message;
+
+  if (replyToMessage && replyToMessage.from.username === bbot.options.username && text) {
+    const input = text.replace("/know", "").trim().toLowerCase();
+    const res = await getChat(input);
+    if (res) {
+      ctx.reply(res);
+    }
   }
 });
 
