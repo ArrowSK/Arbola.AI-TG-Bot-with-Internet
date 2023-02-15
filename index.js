@@ -26,7 +26,7 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = ["artemskov", "OlgaVKov"];
+  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev"];
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
@@ -63,7 +63,7 @@ bot.command("picture", async (ctx) => {
     } else {
       ctx.telegram.sendMessage(
         ctx.message.chat.id,
-        "I can't generate image for this text\n\nPlease use this bot for Educational Purposes , else you will be blocked by bot.",
+        "Please go entertain yourself with smth else," || ctx.from.first_name|| "\n\n. Or be banned",
         {
           reply_to_message_id: ctx.message.message_id,
         }
@@ -99,10 +99,22 @@ bot.command("know", async (ctx) => {
         }
       );
     }
+  } else if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
+    ctx.sendChatAction("typing");
+    const res = await getChat(ctx.message.reply_to_message.text);
+    if (res) {
+      ctx.telegram.sendMessage(
+        ctx.message.chat.id,
+        `${res}`,
+        {
+          reply_to_message_id: ctx.message.reply_to_message.message_id,
+        }
+      );
+    }
   } else {
     ctx.telegram.sendMessage(
       ctx.message.chat.id,
-      "Please ask anything after /ask",
+      "Please provide some text to know or reply to a message containing text to know",
       {
         reply_to_message_id: ctx.message.message_id,
       }
