@@ -80,28 +80,15 @@ bot.command("picture", async (ctx) => {
   }
 });
 
-//Bot on ask command
+//Bot on know command
 
-bot.command("know", async (ctx) => {
+bbot.command("know", async (ctx) => {
   const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
-
   logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-
-  if (text) {
+  
+  if (ctx.message.reply_to_message && text) {
     ctx.sendChatAction("typing");
     const res = await getChat(text);
-    if (res) {
-      ctx.telegram.sendMessage(
-        ctx.message.chat.id,
-        `${res}`,
-        {
-          reply_to_message_id: ctx.message.message_id,
-        }
-      );
-    }
-  } else if (ctx.message.reply_to_message && ctx.message.reply_to_message.text) {
-    ctx.sendChatAction("typing");
-    const res = await getChat(ctx.message.reply_to_message.text);
     if (res) {
       ctx.telegram.sendMessage(
         ctx.message.chat.id,
@@ -114,7 +101,7 @@ bot.command("know", async (ctx) => {
   } else {
     ctx.telegram.sendMessage(
       ctx.message.chat.id,
-      "Please provide some text to know or reply to a message containing text to know",
+      "Please reply to a message and add /know followed by your question.",
       {
         reply_to_message_id: ctx.message.message_id,
       }
