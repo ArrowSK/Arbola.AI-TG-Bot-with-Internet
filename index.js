@@ -22,6 +22,7 @@ module.exports = openai;
 const bot = new Telegraf(process.env.TG_API);
 
 
+
 // Bot on start
 
 bot.start(async (ctx) => {
