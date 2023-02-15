@@ -21,7 +21,12 @@ module.exports = openai;
 
 const bot = new Telegraf(process.env.TG_API);
 
-
+bot.on('message', (ctx) => {
+  const message = ctx.message.text;
+  if (message.toLowerCase().includes('what is your name')) {
+    ctx.reply('My name is Arbola');
+  }
+});
 
 // Bot on start
 
