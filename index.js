@@ -82,14 +82,20 @@ bot.command("picture", async (ctx) => {
 
 //Bot on know command
 
-bot.command("know", async (ctx) => {
-  const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
+bot.on("message", async (ctx) => {
+  const text = ctx.message.text?.trim().toLowerCase();
+  const replyMessage = ctx.message.reply_to_message?.text?.trim().toLowerCase();
 
-  logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
+  if (replyMessage) {
+    ctx.message.text = "/know " + text;
+    return bot.handleUpdate(ctx.update);
+  }
 
-  if (text) {
+  if (text.startsWith("/know")) {
+    const query = text.replace("/know", "").trim();
+    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${query}`);
     ctx.sendChatAction("typing");
-    const res = await getChat(text);
+    const res = await getChat(query);
     if (res) {
       ctx.telegram.sendMessage(
         ctx.message.chat.id,
@@ -98,27 +104,6 @@ bot.command("know", async (ctx) => {
           reply_to_message_id: ctx.message.message_id,
         }
       );
-    }
-  } else {
-    ctx.telegram.sendMessage(
-      ctx.message.chat.id,
-      "Please ask anything after /know",
-      {
-        reply_to_message_id: ctx.message.message_id,
-      }
-    );
-  }
-});
-
-bot.on("message", async (ctx) => {
-  const text = ctx.message.text?.toLowerCase();
-  const replyToMessage = ctx.message.reply_to_message;
-
-  if (replyToMessage && replyToMessage.from.username === bbot.options.username && text) {
-    const input = text.replace("/know", "").trim().toLowerCase();
-    const res = await getChat(input);
-    if (res) {
-      ctx.reply(res);
     }
   }
 });
