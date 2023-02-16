@@ -181,10 +181,10 @@ bot.command('send', async (ctx) => {
 const cheerio = require("cheerio");
 
 async function generateInsult() {
-  const url = "https://codepo8.github.io/shakespeare-insult-generator/";
+  const url = "https://sweary.com/";
   const response = await axios.get(url);
   const $ = cheerio.load(response.data);
-  const insult = $("#insult").text().trim();
+  const insult = $("#words").text().trim();
   return insult;
 }
 
