@@ -178,23 +178,6 @@ bot.command('send', async (ctx) => {
 
 //Bot on talk command
 
-const cheerio = require("cheerio");
-
-async function getInsult() {
-  const url = "https://codepo8.github.io/shakespeare-insult-generator/";
-  const response = await axios.get(url);
-
-  await new Promise(resolve => setTimeout(resolve, 2000)); // wait for 2 seconds before parsing the response
-
-  const $ = cheerio.load(response.data);
-  const insult = $("#insult").text().trim();
-  return insult;
-}
-
-bot.command("talk", async (ctx) => {
-  const insult = await getInsult();
-  ctx.reply(insult);
-});
 
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
