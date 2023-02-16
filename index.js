@@ -180,29 +180,19 @@ bot.command('send', async (ctx) => {
 
 const cheerio = require('cheerio');
 
-bot.command("swear", async (ctx) => {
-  try {
-    ctx.sendChatAction("typing");
-    const response = await axios.get("https://sweary.com/funny-rude-insult-generator/");
-    const $ = cheerio.load(response.data);
-    const text = $("#words").text();
-    ctx.telegram.sendMessage(
-      ctx.message.chat.id,
-      text,
-      {
-        reply_to_message_id: ctx.message.message_id,
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    ctx.telegram.sendMessage(
-      ctx.message.chat.id,
-      "Oops, damn...",
-      {
-        reply_to_message_id: ctx.message.message_id,
-      }
-    );
-  }
+bot.command("talk", async (ctx) => {
+  ctx.sendChatAction("typing");
+
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.goto("https://sweary.com/funny-rude-insult-generator/");
+
+  const insult = await page.$eval("#words", (el) => el.textContent);
+  await browser.close();
+
+  await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second
+
+  await ctx.reply(insult);
 });
 
 bot.command("yos", async (ctx) => {
