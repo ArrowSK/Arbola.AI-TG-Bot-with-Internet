@@ -41,6 +41,22 @@ const getChat = async (text) => {
   }
 };
 
+// Function to perform a Google search
+async function googleSearch(query) {
+  const cx = process.env.CUSTOM_SEARCH_ID;
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUS`;
+
+  try {
+    const response = await axios.get(url);
+    if (response.data.items && response.data.items[0]) {
+      return response.data.items[0].snippet;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // Convert to standard english
 const correctEngish = async (text) => {
   try {
