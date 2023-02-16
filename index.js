@@ -89,7 +89,7 @@ bot.command("know", async (ctx) => {
   if (text) {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
-	const trimmedResult = googleResult.substring(0, 500);
+	const trimmedResult = searchResult.substring(0, 500);
     const prompt = searchResult ? `${text} ${trimmedResult}` : text;
     const res = await getChat(prompt);
     if (res) {
