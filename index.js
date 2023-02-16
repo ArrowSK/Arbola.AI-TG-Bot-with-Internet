@@ -88,11 +88,17 @@ bot.command("know", async (ctx) => {
 
   if (text) {
     ctx.sendChatAction("typing");
-    const searchResult = await googleSearch(text);
-	const trimmedResult = searchResult.substring(0, 1500);
-    const prompt = searchResult ? `${text} || " This is waht I know from the internet about it, but please summarize it for me: " ||  ${trimmedResult}` : text;
+    let searchResult, prompt;
+    try {
+      searchResult = await googleSearch(text);
+      const trimmedResult = searchResult.substring(0, 1500);
+      prompt = `${text} || " This is what I know from the internet about it, but please summarize it for me: " ||  ${trimmedResult}`;
+    } catch (error) {
+      logger.error(`Error occurred while searching: ${error.message}`);
+      prompt = text;
+    }
     const res = await getChat(prompt);
-	const trimres = res.substring(0, 3500);
+    const trimres = res.substring(0, 3500);
     if (trimres) {
       ctx.telegram.sendMessage(
         ctx.message.chat.id,
