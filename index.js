@@ -92,10 +92,11 @@ bot.command("know", async (ctx) => {
 	const trimmedResult = searchResult.substring(0, 500);
     const prompt = searchResult ? `${text} ${trimmedResult}` : text;
     const res = await getChat(prompt);
-    if (res) {
+	const trimres = res.substring(0, 3500);
+    if (trimres) {
       ctx.telegram.sendMessage(
         ctx.message.chat.id,
-        `${res}`,
+        `${trimres}`,
         {
           reply_to_message_id: ctx.message.message_id,
         }
