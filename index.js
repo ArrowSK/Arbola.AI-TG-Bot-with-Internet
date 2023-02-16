@@ -90,7 +90,7 @@ bot.command("know", async (ctx) => {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
 	const trimmedResult = searchResult.substring(0, 1500);
-	const prompt = trimmedResult ? `${text} This is what I know from the internet, but please summarize it for me. Take into account the language of the result: ${trimmedResult}` : text;
+	const prompt = trimmedResult ? `${text} This is what I know from the internet, but please summarize it for me: ${trimmedResult}` : text;
     const res = await getChat(prompt);
 	const trimres = res.substring(0, 3500);
     if (trimres) {
