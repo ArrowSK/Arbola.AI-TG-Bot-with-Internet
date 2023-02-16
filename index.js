@@ -10,8 +10,6 @@ const {
 const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
-const searchResult = require('./Helper/functions');
-
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -112,6 +110,23 @@ bot.command("know", async (ctx) => {
     );
   }
 });
+
+// Function to perform a Google search
+
+async function googleSearch(query) {
+  const cx = process.env.CUSTOM_SEARCH_ID;
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUS`;
+
+  try {
+    const response = await axios.get(url);
+    if (response.data.items && response.data.items[0]) {
+      return response.data.items[0].snippet;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 // Bot on en command
 bot.command("gram", async (ctx) => {
