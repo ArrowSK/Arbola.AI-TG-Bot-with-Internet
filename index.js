@@ -176,6 +176,35 @@ bot.command('send', async (ctx) => {
   }
 });
 
+//Bot on talk command
+
+const cheerio = require('cheerio');
+
+bot.command("swear", async (ctx) => {
+  try {
+    ctx.sendChatAction("typing");
+    const response = await axios.get("https://sweary.com/funny-rude-insult-generator/");
+    const $ = cheerio.load(response.data);
+    const text = $("#words").text();
+    ctx.telegram.sendMessage(
+      ctx.message.chat.id,
+      text,
+      {
+        reply_to_message_id: ctx.message.message_id,
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    ctx.telegram.sendMessage(
+      ctx.message.chat.id,
+      "Oops, damn...",
+      {
+        reply_to_message_id: ctx.message.message_id,
+      }
+    );
+  }
+});
+
 bot.command("yos", async (ctx) => {
   const text = ctx.message.text?.replace("/yos", "")?.trim().toLowerCase();
   logger.info(`Joke: ${ctx.from.username || ctx.from.first_name}: ${text}`);
