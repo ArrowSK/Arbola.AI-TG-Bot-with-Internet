@@ -181,7 +181,7 @@ bot.command('send', async (ctx) => {
 const cheerio = require("cheerio");
 
 async function getInsult() {
-  const url = "https://sweary.com/funny-rude-insult-generator/";
+  const url = "https://sweary.com/";
   const response = await axios.get(url);
 
   await new Promise(resolve => setTimeout(resolve, 3000)); // wait for 2 seconds before parsing the response
