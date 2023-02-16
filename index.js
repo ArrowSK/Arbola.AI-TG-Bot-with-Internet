@@ -178,7 +178,7 @@ bot.command('send', async (ctx) => {
 
 //Bot on talk command
 
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 bot.command("talk", async (ctx) => {
   ctx.sendChatAction("typing");
