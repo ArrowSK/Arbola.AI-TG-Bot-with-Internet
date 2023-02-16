@@ -17,7 +17,6 @@
     "openai": "^3.1.0",
     "pino": "^8.8.0",
     "pino-pretty": "^9.1.1",
-    "puppeteer": "^19.7.1",
     "telegraf": "^4.11.2"
   }
 }
