@@ -42,6 +42,7 @@ const getChat = async (text) => {
 };
 
 // Function to perform a Google search
+
 async function googleSearch(query) {
   const cx = process.env.CUSTOM_SEARCH_ID;
   const apiKey = process.env.GOOGLE_API_KEY;
@@ -73,4 +74,4 @@ const correctEngish = async (text) => {
   }
 };
 
-module.exports = { openai, getImage, getChat, correctEngish };
+module.exports = { openai, getImage, getChat, correctEngish, googleSearch };
