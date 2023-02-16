@@ -81,7 +81,13 @@ bot.command("picture", async (ctx) => {
 
 //Bot on know command
 
-bot.command("know", async (ctx) => {
+const Bottleneck = require("bottleneck");
+const limiter = new Bottleneck({
+  maxConcurrent: 1,
+  minTime: 12000,
+});
+
+bot.command("know", limiter.wrap(async (ctx) => {
   const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
 
   logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
@@ -89,29 +95,23 @@ bot.command("know", async (ctx) => {
   if (text) {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
-	const trimmedResult = searchResult.substring(0, 1500);
-	const prompt = trimmedResult ? `${text} This is what I know from the internet, but please summarize it for me: ${trimmedResult}` : text;
+    const trimmedResult = searchResult.substring(0, 1500);
+    const prompt = trimmedResult
+      ? `${text} This is what I know from the internet, but please summarize it for me: ${trimmedResult}`
+      : text;
     const res = await getChat(prompt);
-	const trimres = res.substring(0, 3500);
+    const trimres = res.substring(0, 3500);
     if (trimres) {
-      ctx.telegram.sendMessage(
-        ctx.message.chat.id,
-        `${trimres}`,
-        {
-          reply_to_message_id: ctx.message.message_id,
-        }
-      );
+      ctx.telegram.sendMessage(ctx.message.chat.id, `${trimres}`, {
+        reply_to_message_id: ctx.message.message_id,
+      });
     }
   } else {
-    ctx.telegram.sendMessage(
-      ctx.message.chat.id,
-      "Please ask anything after /know",
-      {
-        reply_to_message_id: ctx.message.message_id,
-      }
-    );
+    ctx.telegram.sendMessage(ctx.message.chat.id, "Please ask anything after /know", {
+      reply_to_message_id: ctx.message.message_id,
+    });
   }
-});
+}));
 
 // Function to perform a Google search
 
@@ -150,6 +150,29 @@ bot.command("gram", async (ctx) => {
         reply_to_message_id: ctx.message.message_id,
       }
     );
+  }
+});
+
+//Bot on send command
+
+bot.command('send', async (ctx) => {
+  const args = ctx.message.text.split(' ');
+  const chatId = args[1];
+  const message = args.slice(2).join(' ');
+
+  // Check if user is authorized to send message
+  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev"]; // Replace with authorized user IDs
+  if (!allowedUsernames.includes(ctx.chat.username)) {
+    return ctx.reply('Nope. Wont do.');
+  }
+
+  // Send message using bot's Telegram instance
+  try {
+    await bot.telegram.sendMessage(chatId, message);
+    ctx.reply('Message sent!');
+  } catch (error) {
+    console.error(error);
+    ctx.reply('An error occurred while sending the message');
   }
 });
 
