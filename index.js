@@ -118,7 +118,7 @@ bot.command("know", async (ctx) => {
 async function googleSearch(query) {
   const cx = process.env.CUSTOM_SEARCH_ID;
   const apiKey = process.env.GOOGLE_API_KEY;
-  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUS`;
+  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryDE`;
 
   try {
     const response = await axios.get(url);
