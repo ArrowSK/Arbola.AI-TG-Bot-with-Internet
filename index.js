@@ -181,13 +181,13 @@ bot.command('send', async (ctx) => {
 const cheerio = require("cheerio");
 
 async function getInsult() {
-  const url = "https://sweary.com/";
+  const url = "https://codepo8.github.io/shakespeare-insult-generator/";
   const response = await axios.get(url);
 
-  await new Promise(resolve => setTimeout(resolve, 3000)); // wait for 2 seconds before parsing the response
+  await new Promise(resolve => setTimeout(resolve, 2000)); // wait for 2 seconds before parsing the response
 
   const $ = cheerio.load(response.data);
-  const insult = $("#words").text().trim();
+  const insult = $("#insult").text().trim();
   return insult;
 }
 
