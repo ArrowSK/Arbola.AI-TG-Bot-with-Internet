@@ -184,7 +184,7 @@ async function getInsult() {
   const url = "https://sweary.com/funny-rude-insult-generator/";
   const response = await axios.get(url);
 
-  await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 2 seconds before parsing the response
+  await new Promise(resolve => setTimeout(resolve, 3000)); // wait for 2 seconds before parsing the response
 
   const $ = cheerio.load(response.data);
   const insult = $("#words").text().trim();
