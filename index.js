@@ -178,25 +178,26 @@ bot.command('send', async (ctx) => {
 
 //Bot on talk command
 
-const puppeteer = require('puppeteer');
+const cheerio = require("cheerio");
+
+async function getInsult() {
+  const url = "https://sweary.com/funny-rude-insult-generator/";
+  const response = await axios.get(url);
+
+  await new Promise(resolve => setTimeout(resolve, 2000)); // wait for 2 seconds before parsing the response
+
+  const $ = cheerio.load(response.data);
+  const insult = $("#words").text().trim();
+  return insult;
+}
 
 bot.command("talk", async (ctx) => {
-  ctx.sendChatAction("typing");
-
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.goto("https://sweary.com/funny-rude-insult-generator/");
-
-  const insult = await page.$eval("#words", (el) => el.textContent);
-  await browser.close();
-
-  await new Promise(resolve => setTimeout(resolve, 1000)); // wait for 1 second
-
-  await ctx.reply(insult);
+  const insult = await getInsult();
+  ctx.reply(insult);
 });
 
-bot.command("yos", async (ctx) => {
-  const text = ctx.message.text?.replace("/yos", "")?.trim().toLowerCase();
+bot.command("yo", async (ctx) => {
+  const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
   logger.info(`Joke: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
   const ress = await axios.get("https://api.yomomma.info/");
