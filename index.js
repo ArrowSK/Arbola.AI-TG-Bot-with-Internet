@@ -10,7 +10,7 @@ const {
 const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
-const { googleSearch } = require('./functions');
+const { googleSearch } = require('./Helper/functions');
 
 
 const configuration = new Configuration({
