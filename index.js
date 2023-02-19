@@ -198,7 +198,7 @@ bot.command("talk", async (ctx) => {
 const GoogleImages = require('google-images');
 const googleImages = new GoogleImages(process.env.CUSTOM_SEARCH_ID, process.env.GOOGLE_API_KEY);
 
-bot.command('/reverse_image_search', async (ctx) => {
+bot.command('image_search', async (ctx) => {
     // Get the photo that the user sent
     const photo = ctx.message.photo[0];
 
