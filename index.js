@@ -199,20 +199,25 @@ const GoogleImages = require('google-images');
 const search = new GoogleImages(process.env.CUSTOM_SEARCH_ID, process.env.GOOGLE_API_KEY);
 
 bot.command('image_search', async (ctx) => {
-    // Get the photo that the user sent
-    const photo = ctx.message.photo[0];
+  // Check if the user sent a photo with the command
+  if (!ctx.message.photo || ctx.message.photo.length === 0) {
+    return ctx.reply('Please send a photo with your command.');
+  }
 
-    // Get the file ID of the photo
-    const fileID = photo.file_id;
+  // Get the photo that the user sent
+  const photo = ctx.message.photo[0];
 
-    // Get the file path of the photo
-    const filePath = await bot.telegram.getFileLink(fileID);
+  // Get the file ID of the photo
+  const fileID = photo.file_id;
 
-    // Perform the reverse image search
-    const results = await search.search(filePath);
+  // Get the file path of the photo
+  const filePath = await bot.telegram.getFileLink(fileID);
 
-    // Send the results back to the user
-    ctx.reply(`Here are the search results:\n${JSON.stringify(results)}`);
+  // Perform the reverse image search
+  const results = await googleImages.search(filePath);
+
+  // Send the results back to the user
+  ctx.reply(`Here are the search results:\n${JSON.stringify(results)}`);
 });
 
 bot.command("yo", async (ctx) => {
