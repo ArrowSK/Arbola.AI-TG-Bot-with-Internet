@@ -27,8 +27,8 @@ const getChat = async (text) => {
     const response = await openai.createCompletion({
       model: "text-curie-001",
       prompt: text,
-      temperature: 0.4,
-      top_p: 0.3,
+      temperature: 0.3,
+      top_p: 0.9,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
       max_tokens: 800,
