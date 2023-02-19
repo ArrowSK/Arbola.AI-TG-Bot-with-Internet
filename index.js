@@ -32,7 +32,7 @@ bot.start(async (ctx) => {
     if (allowedUsernames.includes(ctx.chat.username)) {
       logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
       ctx.reply(
-        "Welcome To AI Bot 🧿 \n\nCommands 👾 \n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
+        "Welcome To AI Bot 🧿 \n\nCommands 👾 \n/ask  ask anything from me \n/image to create image from text  \n/gram to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
       );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
@@ -42,7 +42,7 @@ bot.start(async (ctx) => {
 
 bot.help((ctx) => {
   ctx.reply(
-    "\nCommands 👾 \n\n/ask  ask anything from me \n/image to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
+    "\nCommands 👾 \n\n/know  ask anything from me \n/picture to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
   );
 });
 
@@ -130,7 +130,7 @@ async function googleSearch(query) {
   }
 }
 
-// Bot on en command
+// Bot on gram command
 bot.command("gram", async (ctx) => {
   const text = ctx.message.text?.replace("/gram", "")?.trim().toLowerCase();
 
