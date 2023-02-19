@@ -196,7 +196,7 @@ bot.command("talk", async (ctx) => {
 //Bot on ImageSearch command
 
 const GoogleImages = require('google-images');
-const googleImages = new GoogleImages(process.env.CUSTOM_SEARCH_ID, process.env.GOOGLE_API_KEY);
+const GoogleImages = new GoogleImages(process.env.CUSTOM_SEARCH_ID, process.env.GOOGLE_API_KEY);
 
 bot.command('image_search', async (ctx) => {
     // Get the photo that the user sent
@@ -209,7 +209,7 @@ bot.command('image_search', async (ctx) => {
     const filePath = await bot.telegram.getFileLink(fileID);
 
     // Perform the reverse image search
-    const results = await googleImages.search(filePath);
+    const results = await GoogleImages.search(filePath);
 
     // Send the results back to the user
     ctx.reply(`Here are the search results:\n${JSON.stringify(results)}`);
