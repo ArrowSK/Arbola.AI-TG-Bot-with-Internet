@@ -195,35 +195,6 @@ bot.command("talk", async (ctx) => {
 
 //Bot on image_search
 
-const GoogleImages = require('google-images');
-const search = new GoogleImages(process.env.CUSTOM_SEARCH_ID, process.env.GOOGLE_API_KEY);
-
-bot.command('image_search', async (ctx) => {
-    // Get the photo that the user sent
-    const photo = ctx.message.photo[0];
-
-    // Check if a photo was sent
-    if (!photo) {
-        return ctx.reply('Please send a photo to search');
-    }
-
-    // Get the file ID of the photo
-    const fileID = photo.file_id;
-
-    // Get the file path of the photo
-    const filePath = await bot.telegram.getFileLink(fileID);
-
-    // Perform the reverse image search
-    const results = await googleImages.search(filePath);
-
-    // Check if there are any search results
-    if (!results.length) {
-        return ctx.reply('No search results found');
-    }
-
-    // Send the results back to the user
-    ctx.reply(`Here are the search results:\n${JSON.stringify(results)}`);
-});
 
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
