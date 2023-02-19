@@ -32,7 +32,7 @@ bot.start(async (ctx) => {
     if (allowedUsernames.includes(ctx.chat.username)) {
       logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
       ctx.reply(
-        "Welcome To AI Bot 🧿 \n\nCommands 👾 \n/ask  ask anything from me \n/image to create image from text  \n/gram to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
+        "Welcome To AI Bot 🧿 \n\nCommands 👾 \n\n/know  ask anything from me \n/picture to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
       );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
