@@ -74,9 +74,7 @@ bot.on('voice', async (ctx) => {
         content: audioBytes,
       };
       const config = {
-        encoding: 'WEBM_OPUS',
-        sampleRateHertz: 48000,
-        languageCode: 'en-US',
+        encoding: 'ENCODING_UNSPECIFIED',
       };
       const request = {
         audio: audio,
