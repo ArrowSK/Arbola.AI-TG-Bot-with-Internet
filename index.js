@@ -58,32 +58,41 @@ const client = new speech.SpeechClient({
   }
 });
 
-// Transcribe audio messages
+// Define the Telegram bot command to transcribe audio messages
 bot.on('voice', async (ctx) => {
   const chatId = ctx.chat.id;
 
-  try {
-    // Download the audio file as a buffer
-    const fileBuffer = await ctx.telegram.getFile(ctx.message.voice.file_id);
+  // Check if the message contains an audio file
+  if (ctx.message && ctx.message.voice) {
+    try {
+      // Download the audio file as a buffer
+      const fileBuffer = await ctx.telegram.getFile(ctx.message.voice.file_id);
 
-    // Transcribe the audio buffer with Speech-to-Text API
-    const audioBytes = fileBuffer.toString('base64');
-    const audio = {
-      content: audioBytes,
-    };
-    const request = {
-      audio: audio,
-    };
-    const [response] = await client.recognize(request);
-    const transcription = response.results
-      .map((result) => result.alternatives[0].transcript)
-      .join('\n');
+      // Transcribe the audio buffer with Speech-to-Text API
+      const audioBytes = fileBuffer.content;
+      const audio = {
+        content: audioBytes,
+      };
+      const config = {
+        encoding: 'LINEAR16',
+        sampleRateHertz: 48000,
+        languageCode: 'en-US',
+      };
+      const request = {
+        audio: audio,
+        config: config,
+      };
+      const [response] = await client.recognize(request);
+      const transcription = response.results
+        .map((result) => result.alternatives[0].transcript)
+        .join('\n');
 
-    // Send the transcription back to the user
-    ctx.reply(transcription);
-  } catch (err) {
-    console.error(err);
-    ctx.reply('An error occurred while transcribing the audio message.');
+      // Send the transcription back to the user
+      ctx.reply(transcription);
+    } catch (err) {
+      console.error(err);
+      ctx.reply('An error occurred while transcribing the audio message.');
+    }
   }
 });
 
