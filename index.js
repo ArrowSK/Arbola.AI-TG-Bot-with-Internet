@@ -222,7 +222,7 @@ bot.command("users", (msg) => {
 
 // Replace with your ImageKit.io credentials
 const IMAGEKIT_ENDPOINT = 'https://ik.imagekit.io/waqal02ll';
-const PRIVATE_KEY = 'public_50H33c9S7YGOpTvT+C1hZcFkCbY=';
+const PRIVATE_KEY = 'private_Yt16FTNZh46MQHqD1Naz3g3u9bE=';
 
 // Bot command to send images to ImageKit.io for improving clarity, denoising, and increasing size 2 times
 bot.on('improve', async (msg) => {
