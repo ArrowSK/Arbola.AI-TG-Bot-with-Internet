@@ -7,7 +7,7 @@ const {
   correctEngish,
 } = require("./Helper/functions");
 
-const { Telegraf } = require("telegraf");
+	const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
 
@@ -22,8 +22,6 @@ const openai = new OpenAIApi(configuration);
 module.exports = openai;
 
 const bot = new Telegraf(process.env.TG_API);
-
-
 
 // Bot on start
 
@@ -61,18 +59,18 @@ const client = new speech.SpeechClient({
 });
 
 // Define the Telegram bot command to transcribe audio messages
-bot.command('transcribe', async (msg) => {
-  const chatId = msg.chat.id;
+bot.command('transcribe', async (ctx) => {
+  const chatId = ctx.chat.id;
 
   // Check if the message contains an audio file
-  if (!msg.voice) {
-    bot.sendMessage(chatId, 'Please forward an audio message to transcribe.');
+  if (!ctx.message.voice) {
+    ctx.reply('Please forward an audio message to transcribe.');
     return;
   }
 
   try {
     // Download the audio file as a buffer
-    const fileBuffer = await bot.downloadFile(msg.voice.file_id);
+    const fileBuffer = await bot.telegram.getFile(ctx.message.voice.file_id);
 
     // Transcribe the audio buffer with Speech-to-Text API
     const audioBytes = fileBuffer.toString('base64');
@@ -94,10 +92,10 @@ bot.command('transcribe', async (msg) => {
       .join('\n');
 
     // Send the transcription back to the user
-    bot.sendMessage(chatId, transcription);
+    ctx.reply(transcription);
   } catch (err) {
     console.error(err);
-    bot.sendMessage(chatId, 'An error occurred while transcribing the audio message.');
+    ctx.reply('An error occurred while transcribing the audio message.');
   }
 });
 
