@@ -71,14 +71,8 @@ bot.on('voice', async (ctx) => {
     const audio = {
       content: audioBytes,
     };
-    const config = {
-      encoding: 'OGG_OPUS',
-      sampleRateHertz: 48000,
-      languageCode: 'en-US',
-    };
     const request = {
       audio: audio,
-      config: config,
     };
     const [response] = await client.recognize(request);
     const transcription = response.results
