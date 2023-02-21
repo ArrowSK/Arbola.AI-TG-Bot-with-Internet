@@ -218,47 +218,6 @@ bot.command("users", (msg) => {
   }
 });
 
-//Bot to enhance pictures
-
-// Replace with your ImageKit.io credentials
-const IMAGEKIT_ENDPOINT = 'https://ik.imagekit.io/waqal02ll';
-const PRIVATE_KEY = 'private_Yt16FTNZh46MQHqD1Naz3g3u9bE=';
-
-// Bot command to send images to ImageKit.io for improving clarity, denoising, and increasing size 2 times
-bot.on('improve', async (msg) => {
-  try {
-    const chatId = msg.chat.id;
-    const photoId = msg.photo[msg.photo.length - 1].file_id;
-    const photoInfo = await bot.getFile(photoId);
-    const photoUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${photoInfo.file_path}`;
-
-    const response = await axios.post(`${IMAGEKIT_ENDPOINT}/v1/files/upload`, {
-      file: photoUrl,
-      fileName: photoInfo.file_unique_id,
-      privateKey: PRIVATE_KEY,
-      transformation: [
-        {
-          effect: 'noise_remove',
-        },
-        {
-          effect: 'sharpness',
-          value: 50,
-        },
-        {
-          height: photoInfo.height * 2,
-          width: photoInfo.width * 2,
-          cropMode: 'pad',
-          background: 'ffffff',
-        },
-      ],
-    });
-
-    bot.sendPhoto(chatId, response.data.url);
-  } catch (error) {
-    console.error(error);
-  }
-});
-
 
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
