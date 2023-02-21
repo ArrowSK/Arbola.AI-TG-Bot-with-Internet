@@ -195,6 +195,29 @@ bot.command("talk", async (ctx) => {
 
 //Bot on image_search
 
+//Check bot users
+
+bot.command("users", (msg) => {
+  const chatId = msg.chat.id;
+  const username = msg.from.username;
+  
+  if (username === "artemskov") {
+    bot.getChatMembersCount(chatId).then((count) => {
+      bot.getChatAdministrators(chatId).then((admins) => {
+        let users = [];
+        admins.forEach((admin) => {
+          if (admin.user.username) {
+            users.push(`@${admin.user.username} (${admin.user.id})`);
+          }
+        });
+        bot.sendMessage(chatId, `Total ${count} users, ${users.length} admins:\n${users.join('\n')}`);
+      });
+    });
+  } else {
+    bot.sendMessage(chatId, "You are not authorized to perform this action.");
+  }
+});
+
 
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
