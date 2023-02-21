@@ -197,7 +197,7 @@ bot.command("talk", async (ctx) => {
 
 //Check bot users
 
-bot.command("users", (msg) => {
+bot.command("users", async (msg) => {
   const chatId = msg.chat.id;
   const username = msg.from.username;
   
