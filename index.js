@@ -11,6 +11,9 @@ const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
 
+const speech = require('@google-cloud/speech');
+const fs = require('fs');
+
 const configuration = new Configuration({
   apiKey: process.env.API,
 });
@@ -46,14 +49,14 @@ bot.help((ctx) => {
   );
 });
 
-//Bot on text command
+//Bot on voice command
 
 // Create a new Speech-to-Text client with Google Cloud credentials
 const client = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
   credentials: {
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+    private_key: process.env.GOOGLE_API_KEY.replace(/\\n/g, '\n')
   }
 });
 
@@ -116,7 +119,7 @@ bot.command("picture", async (ctx) => {
   } else {
     ctx.telegram.sendMessage(
       ctx.message.chat.id,
-      "You have to give some description after /image",
+      "You have to give some description after /picture",
       {
         reply_to_message_id: ctx.message.message_id,
       }
