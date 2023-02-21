@@ -220,8 +220,6 @@ bot.command("users", (msg) => {
 
 //Bot to enhance pictures
 
-const axios = require('axios');
-
 // Replace with your ImageKit.io credentials
 const IMAGEKIT_ENDPOINT = 'https://ik.imagekit.io/waqal02ll';
 const PRIVATE_KEY = 'public_50H33c9S7YGOpTvT+C1hZcFkCbY=';
