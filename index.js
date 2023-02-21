@@ -58,19 +58,13 @@ const client = new speech.SpeechClient({
   }
 });
 
-// Define the Telegram bot command to transcribe audio messages
-bot.command('transcribe', async (ctx) => {
+// Transcribe audio messages
+bot.on('voice', async (ctx) => {
   const chatId = ctx.chat.id;
-
-  // Check if the message contains an audio file
-  if (!ctx.message.voice) {
-    ctx.reply('Please forward an audio message to transcribe.');
-    return;
-  }
 
   try {
     // Download the audio file as a buffer
-    const fileBuffer = await bot.telegram.getFile(ctx.message.voice.file_id);
+    const fileBuffer = await ctx.telegram.getFile(ctx.message.voice.file_id);
 
     // Transcribe the audio buffer with Speech-to-Text API
     const audioBytes = fileBuffer.toString('base64');
