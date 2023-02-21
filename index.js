@@ -46,6 +46,51 @@ bot.help((ctx) => {
   );
 });
 
+//Bot on text command
+
+// Create a new Speech-to-Text client with Google Cloud credentials
+const client = new speech.SpeechClient({
+  projectId: process.env.GOOGLE_PROJECT_ID,
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n')
+  }
+});
+
+// When the bot receives a voice message, transcribe it
+bot.on('voice', async (msg) => {
+  // Get the file ID of the voice message
+  const fileId = msg.voice.file_id;
+
+  try {
+    // Get the file path of the voice message from Telegram
+    const file = await bot.getFile(fileId);
+    const filePath = file.file_path;
+
+    // Use the Speech-to-Text client to transcribe the audio
+    const [response] = await client.recognize({
+      audio: {
+        uri: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${filePath}`
+      },
+      config: {
+        encoding: 'OGG_OPUS',
+        sampleRateHertz: 48000,
+        languageCode: 'en-US'
+      }
+    });
+
+    // Get the transcription and send it back to the user
+    const transcription = response.results
+      .map(result => result.alternatives[0].transcript)
+      .join('\n');
+    bot.sendMessage(msg.chat.id, transcription);
+
+  } catch (err) {
+    console.log('Error:', err);
+    bot.sendMessage(msg.chat.id, 'An error occurred while transcribing the audio.');
+  }
+});
+
 //Bot on Image command
 bot.command("picture", async (ctx) => {
   const text = ctx.message.text?.replace("/picture", "")?.trim().toLowerCase();
