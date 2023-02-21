@@ -60,37 +60,43 @@ const client = new speech.SpeechClient({
   }
 });
 
-// When the bot receives a voice message, transcribe it
-bot.on('voice', async (msg) => {
-  // Get the file ID of the voice message
-  const fileId = msg.voice.file_id;
+// Define the Telegram bot command to transcribe audio messages
+bot.onText(/\/transcribe/, async (msg) => {
+  const chatId = msg.chat.id;
+
+  // Check if the message contains an audio file
+  if (!msg.voice) {
+    bot.sendMessage(chatId, 'Please forward an audio message to transcribe.');
+    return;
+  }
 
   try {
-    // Get the file path of the voice message from Telegram
-    const file = await bot.getFile(fileId);
-    const filePath = file.file_path;
+    // Download the audio file as a buffer
+    const fileBuffer = await bot.downloadFile(msg.voice.file_id);
 
-    // Use the Speech-to-Text client to transcribe the audio
-    const [response] = await client.recognize({
-      audio: {
-        uri: `https://api.telegram.org/file/bot${process.env.TELEGRAM_BOT_TOKEN}/${filePath}`
-      },
-      config: {
-        encoding: 'OGG_OPUS',
-        sampleRateHertz: 48000,
-        languageCode: 'en-US'
-      }
-    });
-
-    // Get the transcription and send it back to the user
+    // Transcribe the audio buffer with Speech-to-Text API
+    const audioBytes = fileBuffer.toString('base64');
+    const audio = {
+      content: audioBytes,
+    };
+    const config = {
+      encoding: 'OGG_OPUS',
+      sampleRateHertz: 48000,
+    };
+    const request = {
+      audio: audio,
+      config: config,
+    };
+    const [response] = await client.recognize(request);
     const transcription = response.results
-      .map(result => result.alternatives[0].transcript)
+      .map((result) => result.alternatives[0].transcript)
       .join('\n');
-    bot.sendMessage(msg.chat.id, transcription);
 
+    // Send the transcription back to the user
+    bot.sendMessage(chatId, transcription);
   } catch (err) {
-    console.log('Error:', err);
-    bot.sendMessage(msg.chat.id, 'An error occurred while transcribing the audio.');
+    console.error(err);
+    bot.sendMessage(chatId, 'An error occurred while transcribing the audio message.');
   }
 });
 
