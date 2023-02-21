@@ -49,50 +49,6 @@ bot.help((ctx) => {
 
 //Bot on voice command
 
-// Create a new Speech-to-Text client with Google Cloud credentials
-const client = new speech.SpeechClient({
-  projectId: process.env.GOOGLE_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_API_KEY.replace(/\\n/g, '\n')
-  }
-});
-
-// Define the Telegram bot command to transcribe audio messages
-bot.on('voice', async (ctx) => {
-  const chatId = ctx.chat.id;
-
-  // Check if the message contains an audio file
-  if (ctx.message && ctx.message.voice) {
-    try {
-      // Download the audio file as a buffer
-      const fileBuffer = await ctx.telegram.getFile(ctx.message.voice.file_id);
-
-      // Transcribe the audio buffer with Speech-to-Text API
-      const audioBytes = fileBuffer.content;
-      const audio = {
-        content: audioBytes,
-      };
-      const config = {
-        encoding: 'ENCODING_UNSPECIFIED',
-      };
-      const request = {
-        audio: audio,
-        config: config,
-      };
-      const [response] = await client.recognize(request);
-      const transcription = response.results
-        .map((result) => result.alternatives[0].transcript)
-        .join('\n');
-
-      // Send the transcription back to the user
-      ctx.reply(transcription);
-    } catch (err) {
-      console.error(err);
-      ctx.reply('An error occurred while transcribing the audio message.');
-    }
-  }
-});
 
 //Bot on Image command
 bot.command("picture", async (ctx) => {
