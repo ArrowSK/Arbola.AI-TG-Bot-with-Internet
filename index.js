@@ -13,6 +13,7 @@ const logger = require("./Helper/logger");
 
 const speech = require('@google-cloud/speech');
 const fs = require('fs');
+const util = require('util');
 
 const configuration = new Configuration({
   apiKey: process.env.API,
