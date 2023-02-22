@@ -199,6 +199,94 @@ bot.command("talk", async (ctx) => {
 
 //Bot on image_search
 
+//Bot on transcribe command
+
+const speech = require('@google-cloud/speech');
+
+// Create a Speech-to-Text client with your Google Cloud credentials
+const client = new speech.SpeechClient({
+  projectId: process.env.GOOGLE_PROJECT_ID,
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_API_KEY.replace(/\\n/g, '\n'),
+  },
+});
+
+// Define the Telegram bot command to transcribe audio messages
+bot.command('transcribe', async (ctx) => {
+  const chatId = ctx.chat.id;
+
+  // Check if the message contains an audio file
+  if (!ctx.message.voice) {
+    ctx.reply('Please send an audio message to transcribe.');
+    return;
+  }
+
+  try {
+    // Download the audio file as a buffer
+    const fileBuffer = await ctx.telegram.downloadVoice(ctx.message.voice.file_id);
+
+    // Detect the audio file format
+    const format = detectAudioFormat(fileBuffer);
+
+    // Detect the audio language
+    const languageCode = await detectAudioLanguage(fileBuffer);
+
+    // Transcribe the audio buffer with Speech-to-Text API
+    const audioBytes = fileBuffer.toString('base64');
+    const audio = {
+      content: audioBytes,
+    };
+    const config = {
+      encoding: format,
+      sampleRateHertz: 16000,
+      languageCode: languageCode,
+    };
+    const request = {
+      audio: audio,
+      config: config,
+    };
+    const [response] = await client.recognize(request);
+    const transcription = response.results
+      .map((result) => result.alternatives[0].transcript)
+      .join('\n');
+
+    // Send the transcription back to the user
+    ctx.reply(transcription);
+  } catch (err) {
+    console.error(err);
+    ctx.reply('An error occurred while transcribing the audio message.');
+  }
+});
+
+// Function to detect the audio file format
+function detectAudioFormat(audioBuffer) {
+  const fileSignature = audioBuffer.toString('hex', 0, 4);
+  switch (fileSignature) {
+    case '52494646': // WAV file format
+      return 'LINEAR16';
+    case '464f524d': // OGG file format
+      return 'OGG_OPUS';
+    default:
+      throw new Error('Unsupported audio file format.');
+  }
+}
+
+// Function to detect the audio language
+async function detectAudioLanguage(audioBuffer) {
+  const [result] = await client.recognize({
+    audio: {
+      content: audioBuffer.toString('base64'),
+    },
+    config: {
+      encoding: 'FLAC',
+      sampleRateHertz: 16000,
+      enableAutomaticLanguageDetection: true,
+    },
+  });
+  return result.languageCode;
+}
+
 
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
