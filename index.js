@@ -201,8 +201,6 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
-const speech = require('@google-cloud/speech');
-
 // Create a Speech-to-Text client with your Google Cloud credentials
 const client = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
