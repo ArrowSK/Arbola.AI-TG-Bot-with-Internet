@@ -211,14 +211,8 @@ const client = new speech.SpeechClient({
 });
 
 // Define the Telegram bot command to transcribe audio messages
-bot.command('transcribe', async (ctx) => {
+bot.on('voice', async (ctx) => {
   const chatId = ctx.chat.id;
-
-  // Check if the message contains an audio file
-  if (!ctx.message.voice) {
-    ctx.reply('Please send an audio message to transcribe.');
-    return;
-  }
 
   try {
     // Download the audio file as a buffer
