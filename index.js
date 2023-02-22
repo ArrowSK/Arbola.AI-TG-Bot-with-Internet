@@ -215,8 +215,10 @@ bot.on('voice', async (ctx) => {
   const chatId = ctx.chat.id;
 
   try {
-    // Download the audio file as a buffer
-    const fileBuffer = await ctx.telegram.downloadVoice(ctx.message.voice.file_id);
+    // Get the audio file as a buffer
+    const fileId = ctx.message.voice.file_id;
+    const file = await ctx.telegram.getFile(fileId);
+    const fileBuffer = await util.promisify(fs.readFile)(file.file_path);
 
     // Detect the audio file format
     const format = detectAudioFormat(fileBuffer);
