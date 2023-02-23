@@ -14,7 +14,7 @@ const speech = require("@google-cloud/speech");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 const cheerio = require('cheerio');
 
 const configuration = new Configuration({
