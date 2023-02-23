@@ -169,9 +169,9 @@ bot.command('track', async (ctx) => {
   try {
     const response = await axios.get(`https://www.17track.net/en/track?nums=${trackingNumber}&fc=0`);
     const $ = cheerio.load(response.data);
-    const status = $('.info .status .text').text();
-    const lastUpdate = $('.info .time .text').text();
-    const location = $('.row .nowrap:first-of-type .text').text();
+    const status = $('.col-md-8 .card-header').text();
+    const lastUpdate = $('.col-md-8 .card-body > div:nth-child(2) > div:first-child > div:first-child').text();
+    const location = $('.col-md-8 .card-body > div:nth-child(2) > div:first-child > div:last-child').text();
     const message = `Status: ${status}\nLast update: ${lastUpdate}\nLocation: ${location}`;
     ctx.reply(message);
   } catch (err) {
