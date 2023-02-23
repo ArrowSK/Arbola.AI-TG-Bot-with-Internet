@@ -10,11 +10,10 @@ const {
 	const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
-
 const speech = require("@google-cloud/speech");
 const fs = require("fs");
 const util = require("util");
-const trackingUrl = require("tracking-url");
+const trackingUrl = require('tracking-url').default;
 const Bottleneck = require("bottleneck");
 
 const configuration = new Configuration({
