@@ -156,30 +156,6 @@ bot.command("gram", async (ctx) => {
   }
 });
 
-//Bot on track command
-
-bot.command('track', async (ctx) => {
-  const chatId = ctx.chat.id;
-  const trackingNumber = ctx.message.text.split(' ')[1];
-
-  if (!trackingNumber) {
-    ctx.reply('Please provide a tracking number.');
-    return;
-  }
-
-  try {
-    const response = await axios.get(`https://parcelsapp.com/en/tracking/${trackingNumber}`);
-    const $ = cheerio.load(response.data);
-    const status = $('.tracking-checkpoint .checkpoint-text').first().text();
-    const location = $('.tracking-location .tracking-text').first().text();
-    const message = `Status: ${status}\nLocation: ${location}`;
-    ctx.reply(message);
-  } catch (err) {
-    console.error(err);
-    ctx.reply('An error occurred while tracking the package.');
-  }
-});
-
 
 //Bot on send command
 
