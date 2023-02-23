@@ -14,7 +14,6 @@ const speech = require("@google-cloud/speech");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
-const fetch = require('node-fetch').default;
 const cheerio = require('cheerio');
 
 const configuration = new Configuration({
@@ -156,41 +155,28 @@ bot.command("gram", async (ctx) => {
   }
 });
 
-// Function to get the tracking URL based on the tracking number and the courier name
-async function getTrackingUrl(trackingNumber, courierName) {
-  const searchUrl = `https://www.packages24.com/courier/${courierName}/?number=${trackingNumber}`;
-  const searchPage = await fetch(searchUrl);
-  const searchHtml = await searchPage.text();
-  const $ = cheerio.load(searchHtml);
-  const trackingUrl = $('a.track-button[href^="https://"]').attr('href');
-  return trackingUrl;
-}
+//Bot on track command
 
-// Telegram bot command to track a package based on the tracking number and the courier name
 bot.command('track', async (ctx) => {
   const chatId = ctx.chat.id;
-
-  // Check if the user provided a tracking number and a courier name
   const trackingNumber = ctx.message.text.split(' ')[1];
-  const courierName = ctx.message.text.split(' ')[2];
-  if (!trackingNumber || !courierName) {
-    ctx.reply('Please provide a tracking number and a courier name in the format /track tracking_number courier_name');
+
+  if (!trackingNumber) {
+    ctx.reply('Please provide a tracking number.');
     return;
   }
 
   try {
-    // Get the tracking URL based on the tracking number and the courier name
-    const trackingUrl = await getTrackingUrl(trackingNumber, courierName);
-    if (!trackingUrl) {
-      ctx.reply('No tracking information found.');
-      return;
-    }
-
-    // Send the tracking URL back to the user
-    ctx.reply(`Tracking URL: ${trackingUrl}`);
+    const response = await axios.get(`https://www.packagetrackr.com/track/${trackingNumber}`);
+    const $ = cheerio.load(response.data);
+    const status = $('.tracking-status').text();
+    const lastUpdate = $('.tracking-history .row').first().find('.date').text();
+    const location = $('.tracking-history .row').first().find('.location').text();
+    const message = `Status: ${status}\nLast update: ${lastUpdate}\nLocation: ${location}`;
+    ctx.reply(message);
   } catch (err) {
     console.error(err);
-    ctx.reply('An error occurred while searching for the tracking information.');
+    ctx.reply('An error occurred while tracking the package.');
   }
 });
 
