@@ -11,10 +11,11 @@ const {
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
 
-const speech = require('@google-cloud/speech');
-const fs = require('fs');
-const util = require('util');
-const trackingUrl = require('tracking-url');
+const speech = require("@google-cloud/speech");
+const fs = require("fs");
+const util = require("util");
+const trackingUrl = require("tracking-url");
+const Bottleneck = require("bottleneck");
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -87,7 +88,6 @@ bot.command("picture", async (ctx) => {
 
 //Bot on know command
 
-const Bottleneck = require("bottleneck");
 const limiter = new Bottleneck({
   maxConcurrent: 1,
   minTime: 12000,
