@@ -14,6 +14,7 @@ const logger = require("./Helper/logger");
 const speech = require('@google-cloud/speech');
 const fs = require('fs');
 const util = require('util');
+const trackingUrl = require('tracking-url');
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -199,8 +200,6 @@ bot.command("talk", async (ctx) => {
 });
 
 //Bot on track
-
-const trackingUrl = require('tracking-url');
 
 // Define the Telegram bot command to track a package
 bot.command('track', async (ctx) => {
