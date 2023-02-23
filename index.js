@@ -167,11 +167,11 @@ bot.command('track', async (ctx) => {
   }
 
   try {
-    const response = await axios.get(`https://www.packagetrackr.com/track/${trackingNumber}`);
+    const response = await axios.get(`https://www.17track.net/en/track?nums=${trackingNumber}&fc=0`);
     const $ = cheerio.load(response.data);
-    const status = $('.tracking-status').text();
-    const lastUpdate = $('.tracking-history .row').first().find('.date').text();
-    const location = $('.tracking-history .row').first().find('.location').text();
+    const status = $('.info .status .text').text();
+    const lastUpdate = $('.info .time .text').text();
+    const location = $('.row .nowrap:first-of-type .text').text();
     const message = `Status: ${status}\nLast update: ${lastUpdate}\nLocation: ${location}`;
     ctx.reply(message);
   } catch (err) {
@@ -179,6 +179,7 @@ bot.command('track', async (ctx) => {
     ctx.reply('An error occurred while tracking the package.');
   }
 });
+
 
 //Bot on send command
 
