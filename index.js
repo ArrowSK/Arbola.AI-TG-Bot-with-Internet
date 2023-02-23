@@ -198,7 +198,35 @@ bot.command("talk", async (ctx) => {
   ctx.reply(insult);
 });
 
-//Bot on image_search
+//Bot on track
+
+const trackingUrl = require('tracking-url');
+
+// Define the Telegram bot command to track a package
+bot.command('track', async (ctx) => {
+  const chatId = ctx.chat.id;
+
+  // Check if the user provided a tracking number
+  if (!ctx.message.text.includes(' ')) {
+    ctx.reply('Please provide a tracking number.');
+    return;
+  }
+
+  try {
+    // Parse the tracking number and detect the carrier
+    const [trackingNumber, carrier] = await trackingUrl.detect(ctx.message.text);
+
+    // Track the package with the carrier's website
+    const trackingUrl = await trackingUrl.getTrackingUrl(trackingNumber, carrier);
+    const trackingHtml = await trackingUrl.getTrackingHtml(trackingNumber, carrier);
+
+    // Send the tracking information back to the user
+    ctx.replyWithHTML(`Tracking URL: <a href="${trackingUrl}">${trackingUrl}</a>\n${trackingHtml}`);
+  } catch (err) {
+    console.error(err);
+    ctx.reply('An error occurred while tracking the package.');
+  }
+});
 
 //Bot on transcribe command
 
