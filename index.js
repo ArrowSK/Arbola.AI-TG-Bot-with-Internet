@@ -15,6 +15,7 @@ const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
 const cheerio = require('cheerio');
+const { Markup } = require('telegraf');
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -167,13 +168,15 @@ bot.command('track', async (ctx) => {
   }
 
   try {
-    const response = await axios.get(`https://www.17track.net/en/track?nums=${trackingNumber}&fc=0`);
+    const response = await axios.get(`https://t.17track.net/en?nums=${trackingNumber}`);
     const $ = cheerio.load(response.data);
-    const status = $('.col-md-8 .card-header').text();
-    const lastUpdate = $('.col-md-8 .card-body > div:nth-child(2) > div:first-child > div:first-child').text();
-    const location = $('.col-md-8 .card-body > div:nth-child(2) > div:first-child > div:last-child').text();
+    const status = $('.status-desc').first().text().trim();
+    const lastUpdate = $('.time-line .row .col-md-2').first().text().trim();
+    const location = $('.time-line .row .col-md-6').first().text().trim();
     const message = `Status: ${status}\nLast update: ${lastUpdate}\nLocation: ${location}`;
-    ctx.reply(message);
+    ctx.reply(message, Markup.inlineKeyboard([
+      Markup.button.url('Track on 17track', `https://t.17track.net/en?nums=${trackingNumber}`)
+    ]));
   } catch (err) {
     console.error(err);
     ctx.reply('An error occurred while tracking the package.');
