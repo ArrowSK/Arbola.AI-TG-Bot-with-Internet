@@ -13,8 +13,9 @@ const logger = require("./Helper/logger");
 const speech = require("@google-cloud/speech");
 const fs = require("fs");
 const util = require("util");
-const trackingUrl = require('tracking-url').default;
 const Bottleneck = require("bottleneck");
+const fetch = require('node-fetch');
+const cheerio = require('cheerio');
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -155,31 +156,41 @@ bot.command("gram", async (ctx) => {
   }
 });
 
-//Bot on track
+// Function to get the tracking URL based on the tracking number and the courier name
+async function getTrackingUrl(trackingNumber, courierName) {
+  const searchUrl = `https://www.packages24.com/courier/${courierName}/?number=${trackingNumber}`;
+  const searchPage = await fetch(searchUrl);
+  const searchHtml = await searchPage.text();
+  const $ = cheerio.load(searchHtml);
+  const trackingUrl = $('a.track-button[href^="https://"]').attr('href');
+  return trackingUrl;
+}
 
-// Define the Telegram bot command to track a package
+// Telegram bot command to track a package based on the tracking number and the courier name
 bot.command('track', async (ctx) => {
   const chatId = ctx.chat.id;
 
-  // Check if the user provided a tracking number
-  if (!ctx.message.text.includes(' ')) {
-    ctx.reply('Please provide a tracking number.');
+  // Check if the user provided a tracking number and a courier name
+  const trackingNumber = ctx.message.text.split(' ')[1];
+  const courierName = ctx.message.text.split(' ')[2];
+  if (!trackingNumber || !courierName) {
+    ctx.reply('Please provide a tracking number and a courier name in the format /track tracking_number courier_name');
     return;
   }
 
   try {
-    // Parse the tracking number and detect the carrier
-    const [trackingNumber, carrier] = await trackingUrl.detect(ctx.message.text);
+    // Get the tracking URL based on the tracking number and the courier name
+    const trackingUrl = await getTrackingUrl(trackingNumber, courierName);
+    if (!trackingUrl) {
+      ctx.reply('No tracking information found.');
+      return;
+    }
 
-    // Track the package with the carrier's website
-    const trackingUrl = await trackingUrl.getTrackingUrl(trackingNumber, carrier);
-    const trackingHtml = await trackingUrl.getTrackingHtml(trackingNumber, carrier);
-
-    // Send the tracking information back to the user
-    ctx.replyWithHTML(`Tracking URL: <a href="${trackingUrl}">${trackingUrl}</a>\n${trackingHtml}`);
+    // Send the tracking URL back to the user
+    ctx.reply(`Tracking URL: ${trackingUrl}`);
   } catch (err) {
     console.error(err);
-    ctx.reply('An error occurred while tracking the package.');
+    ctx.reply('An error occurred while searching for the tracking information.');
   }
 });
 
@@ -208,7 +219,6 @@ bot.command('send', async (ctx) => {
 
 //Bot on talk command
 
-const cheerio = require("cheerio");
 
 async function generateInsult() {
   const url = "https://sweary.com/";
