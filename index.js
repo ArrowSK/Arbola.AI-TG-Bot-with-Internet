@@ -168,12 +168,11 @@ bot.command('track', async (ctx) => {
   }
 
   try {
-    const response = await axios.get(`https://www.aftership.com/track/${trackingNumber}`);
+    const response = await axios.get(`https://parcelsapp.com/en/tracking/${trackingNumber}`);
     const $ = cheerio.load(response.data);
-    const status = $('.tracking-detail-status').text().trim();
-    const lastUpdate = $('.checkpoint-card .checkpoint-date').first().text().trim();
-    const location = $('.checkpoint-card .checkpoint-location').first().text().trim();
-    const message = `Status: ${status}\nLast update: ${lastUpdate}\nLocation: ${location}`;
+    const status = $('.tracking-checkpoint .checkpoint-text').first().text();
+    const location = $('.tracking-location .tracking-text').first().text();
+    const message = `Status: ${status}\nLocation: ${location}`;
     ctx.reply(message);
   } catch (err) {
     console.error(err);
