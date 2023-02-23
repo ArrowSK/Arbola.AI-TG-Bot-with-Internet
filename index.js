@@ -168,15 +168,13 @@ bot.command('track', async (ctx) => {
   }
 
   try {
-    const response = await axios.get(`https://t.17track.net/en?nums=${trackingNumber}`);
+    const response = await axios.get(`https://www.aftership.com/track/${trackingNumber}`);
     const $ = cheerio.load(response.data);
-    const status = $('.status-desc').first().text().trim();
-    const lastUpdate = $('.time-line .row .col-md-2').first().text().trim();
-    const location = $('.time-line .row .col-md-6').first().text().trim();
+    const status = $('.tracking-detail-status').text().trim();
+    const lastUpdate = $('.checkpoint-card .checkpoint-date').first().text().trim();
+    const location = $('.checkpoint-card .checkpoint-location').first().text().trim();
     const message = `Status: ${status}\nLast update: ${lastUpdate}\nLocation: ${location}`;
-    ctx.reply(message, Markup.inlineKeyboard([
-      Markup.button.url('Track on 17track', `https://t.17track.net/en?nums=${trackingNumber}`)
-    ]));
+    ctx.reply(message);
   } catch (err) {
     console.error(err);
     ctx.reply('An error occurred while tracking the package.');
