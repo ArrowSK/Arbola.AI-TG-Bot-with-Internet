@@ -31,7 +31,7 @@ const getChat = async (text) => {
       top_p: 0.9,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
-      max_tokens: 800,
+      max_tokens: 900,
     });
 
     return response.data.choices[0].text;
