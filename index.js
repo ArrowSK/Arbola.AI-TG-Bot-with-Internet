@@ -100,7 +100,7 @@ bot.command("know", limiter.wrap(async (ctx) => {
     const searchResult = await googleSearch(text);
     const trimmedResult = searchResult.substring(0, 1500);
     const prompt = trimmedResult
-      ? `${text} Be specific. Do not repeat the prompt. Base results on scientific evidence. Be rational. Bear sex in mind. Flirt. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
+      ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
       : text;
     const res = await getChat(prompt);
     const trimres = res.substring(0, 3900);
