@@ -199,15 +199,10 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
-	const convertAudio = async (fileName) => {
-  const inputFormat = detectAudioFormat(fs.readFileSync(fileName));
-  const outputFile = `voice/${uuidv4()}.${inputFormat}`;
-  const command = `ffmpeg -y -i ${fileName} -acodec pcm_s16le -ar 16000 ${outputFile}`;
-  await exec(command);
-  fs.unlinkSync(fileName);
-  return outputFile;
-};
+const { spawn } = require('child_process');
+const path = require('path');
 
+// Bot on transcribe command
 // Create a Speech-to-Text client with your Google Cloud credentials
 const client = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
@@ -218,24 +213,33 @@ const client = new speech.SpeechClient({
 });
 
 // Define the Telegram bot command to transcribe audio messages
-if (ctx.message.voice) {
+bot.on('message', async (ctx) => {
+  const chatId = ctx.chat.id;
+
+  // Check if the message contains an audio file
+  if (ctx.message.voice) {
     try {
       const voiceFile = await ctx.telegram.getFile(ctx.message.voice.file_id);
       const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
       const response1 = await axios.get(fileUrl, { responseType: 'arraybuffer' });
       const fileBuffer = Buffer.from(response1.data);
-	  
+
       // Generate a unique file name for the audio message
-      const fileName = `voice/${ctx.message.voice.file_unique_id}.${detectAudioFormat(fileBuffer)}`;
+      const fileExtension = path.extname(voiceFile.file_path);
+      const fileName = `voice/${ctx.message.voice.file_unique_id}${fileExtension}`;
 
       // Save the audio file to disk
       fs.writeFileSync(fileName, fileBuffer);
 
-      // Convert the audio file to a supported format
-      const convertedFile = await convertAudio(fileName);
-
       // Detect the audio language
-      const languageCode = await detectAudioLanguage(fs.readFileSync(convertedFile));
+      const languageCode = await detectAudioLanguage(fileName);
+
+      // Check if the audio file format is supported
+      const format = detectAudioFormat(fileBuffer);
+      if (!['LINEAR16', 'OGG_OPUS', 'MP3', 'AMR_WB', 'OPUS'].includes(format)) {
+        // Convert the audio file to a supported format using ffmpeg
+        await convertAudioFile(fileName, format);
+      }
 
       // Transcribe the audio file with Speech-to-Text API
       const config = {
@@ -245,7 +249,7 @@ if (ctx.message.voice) {
       };
       const request = {
         audio: {
-          content: fs.readFileSync(convertedFile).toString('base64')
+          uri: `gs://${process.env.GOOGLE_STORAGE_BUCKET_NAME}/${fileName}`
         },
         config: config,
       };
@@ -257,14 +261,15 @@ if (ctx.message.voice) {
       // Send the transcription back to the user
       ctx.reply(transcription);
 
-      // Delete the audio files
-      fs.unlinkSync(convertedFile);
-	  } catch (err) {
+      // Delete the audio file from Google Cloud Storage
+      await deleteAudioFile(fileName);
+
+    } catch (err) {
       console.error(err);
       ctx.reply('An error occurred while transcribing the audio message.');
     }
   }
-
+});
 
 // Function to detect the audio file format
 
