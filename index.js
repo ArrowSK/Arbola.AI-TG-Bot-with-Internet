@@ -264,6 +264,7 @@ bot.on('message', async (ctx) => {
 
 
 // Function to detect the audio file format
+
 function detectAudioFormat(audioBuffer) {
   const fileSignature = audioBuffer.toString('hex', 0, 4);
   switch (fileSignature) {
@@ -271,6 +272,12 @@ function detectAudioFormat(audioBuffer) {
       return 'LINEAR16';
     case '464f524d': // OGG file format
       return 'OGG_OPUS';
+    case 'fff15080': // MP3 file format
+      return 'MP3';
+    case '3026b275': // AMR-WB file format
+      return 'AMR_WB';
+    case '23e29e00': // Opus file format
+      return 'OPUS';
     default:
       throw new Error('Unsupported audio file format.');
   }
