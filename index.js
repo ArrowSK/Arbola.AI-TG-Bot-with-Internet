@@ -215,9 +215,11 @@ bot.on('message', async (ctx) => {
   // Check if the message contains an audio file
   if (ctx.message.voice) {
     try {
-      // Download the audio file as a buffer
-      const fileBuffer = await ctx.telegram.downloadVoice(ctx.message.voice.file_id);
-
+      const voiceFile = await ctx.telegram.getFile(ctx.message.voice.file_id);
+      const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
+      const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+      const fileBuffer = Buffer.from(response.data);
+	  
       // Generate a unique file name for the audio message
       const fileName = `voice/${ctx.message.voice.file_unique_id}.${detectAudioFormat(fileBuffer)}`;
 
