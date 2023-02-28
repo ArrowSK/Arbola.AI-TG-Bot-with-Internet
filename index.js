@@ -241,8 +241,8 @@ bot.on('message', async (ctx) => {
         },
         config: config,
       };
-      const [response1] = await client.recognize(request);
-      const transcription = response1.results
+      const [response2] = await client.recognize(request);
+      const transcription = response2.results
         .map((result) => result.alternatives[0].transcript)
         .join('\n');
 
