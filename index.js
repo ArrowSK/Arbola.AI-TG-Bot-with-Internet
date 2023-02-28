@@ -223,33 +223,28 @@ bot.on('message', async (ctx) => {
       const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
       const response1 = await axios.get(fileUrl, { responseType: 'arraybuffer' });
       const fileBuffer = Buffer.from(response1.data);
-
+	  
       // Generate a unique file name for the audio message
-      const fileExtension = path.extname(voiceFile.file_path);
-      const fileName = `voice/${ctx.message.voice.file_unique_id}${fileExtension}`;
+      const fileName = `voice/${ctx.message.voice.file_unique_id}.${detectAudioFormat(fileBuffer)}`;
 
       // Save the audio file to disk
+      if (!fs.existsSync('voice')) {
+        fs.mkdirSync('voice');
+      }
       fs.writeFileSync(fileName, fileBuffer);
 
       // Detect the audio language
-      const languageCode = await detectAudioLanguage(fileName);
-
-      // Check if the audio file format is supported
-      const format = detectAudioFormat(fileBuffer);
-      if (!['LINEAR16', 'OGG_OPUS', 'MP3', 'AMR_WB', 'OPUS'].includes(format)) {
-        // Convert the audio file to a supported format using ffmpeg
-        await convertAudioFile(fileName, format);
-      }
+      const languageCode = await detectAudioLanguage(fileBuffer);
 
       // Transcribe the audio file with Speech-to-Text API
+      const audioFilePath = `./${fileName}`;
       const config = {
-        encoding: 'LINEAR16',
-        sampleRateHertz: 16000,
+        encoding: detectAudioFormat(fileBuffer),
         languageCode: languageCode,
       };
       const request = {
         audio: {
-          uri: `gs://${process.env.GOOGLE_STORAGE_BUCKET_NAME}/${fileName}`
+          content: fs.readFileSync(audioFilePath).toString('base64')
         },
         config: config,
       };
@@ -260,10 +255,13 @@ bot.on('message', async (ctx) => {
 
       // Send the transcription back to the user
       ctx.reply(transcription);
-
-      // Delete the audio file from Google Cloud Storage
-      await deleteAudioFile(fileName);
-
+      fs.unlink(fileName, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log('Audio file deleted.');
+      });
     } catch (err) {
       console.error(err);
       ctx.reply('An error occurred while transcribing the audio message.');
