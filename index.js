@@ -199,6 +199,15 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
+	const convertAudio = async (fileName) => {
+  const inputFormat = detectAudioFormat(fs.readFileSync(fileName));
+  const outputFile = `voice/${uuidv4()}.${inputFormat}`;
+  const command = `ffmpeg -y -i ${fileName} -acodec pcm_s16le -ar 16000 ${outputFile}`;
+  await exec(command);
+  fs.unlinkSync(fileName);
+  return outputFile;
+};
+
 // Create a Speech-to-Text client with your Google Cloud credentials
 const client = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
@@ -209,11 +218,7 @@ const client = new speech.SpeechClient({
 });
 
 // Define the Telegram bot command to transcribe audio messages
-bot.on('message', async (ctx) => {
-  const chatId = ctx.chat.id;
-
-  // Check if the message contains an audio file
-  if (ctx.message.voice) {
+if (ctx.message.voice) {
     try {
       const voiceFile = await ctx.telegram.getFile(ctx.message.voice.file_id);
       const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
@@ -226,18 +231,21 @@ bot.on('message', async (ctx) => {
       // Save the audio file to disk
       fs.writeFileSync(fileName, fileBuffer);
 
+      // Convert the audio file to a supported format
+      const convertedFile = await convertAudio(fileName);
+
       // Detect the audio language
-      const languageCode = await detectAudioLanguage(fileBuffer);
+      const languageCode = await detectAudioLanguage(fs.readFileSync(convertedFile));
 
       // Transcribe the audio file with Speech-to-Text API
-      const audioFilePath = `./${fileName}`;
       const config = {
-        encoding: detectAudioFormat(fileBuffer),
+        encoding: 'LINEAR16',
+        sampleRateHertz: 16000,
         languageCode: languageCode,
       };
       const request = {
         audio: {
-          content: fs.readFileSync(audioFilePath).toString('base64')
+          content: fs.readFileSync(convertedFile).toString('base64')
         },
         config: config,
       };
@@ -248,19 +256,14 @@ bot.on('message', async (ctx) => {
 
       // Send the transcription back to the user
       ctx.reply(transcription);
-	  fs.unlink(fileName, (err) => {
-	    if (err) {
-	      console.error(err);
-	      return;
-	    }
-	    console.log('Audio file deleted.');
-	  });
-    } catch (err) {
+
+      // Delete the audio files
+      fs.unlinkSync(convertedFile);
+	  } catch (err) {
       console.error(err);
       ctx.reply('An error occurred while transcribing the audio message.');
     }
   }
-});
 
 
 // Function to detect the audio file format
@@ -297,6 +300,7 @@ async function detectAudioLanguage(audioBuffer) {
   });
   return result.languageCode;
 }
+
 
 
 bot.command("yo", async (ctx) => {
