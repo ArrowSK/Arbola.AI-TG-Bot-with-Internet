@@ -217,8 +217,8 @@ bot.on('message', async (ctx) => {
     try {
       const voiceFile = await ctx.telegram.getFile(ctx.message.voice.file_id);
       const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
-      const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
-      const fileBuffer = Buffer.from(response.data);
+      const response1 = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+      const fileBuffer = Buffer.from(response1.data);
 	  
       // Generate a unique file name for the audio message
       const fileName = `voice/${ctx.message.voice.file_unique_id}.${detectAudioFormat(fileBuffer)}`;
@@ -241,8 +241,8 @@ bot.on('message', async (ctx) => {
         },
         config: config,
       };
-      const [response] = await client.recognize(request);
-      const transcription = response.results
+      const [response1] = await client.recognize(request);
+      const transcription = response1.results
         .map((result) => result.alternatives[0].transcript)
         .join('\n');
 
