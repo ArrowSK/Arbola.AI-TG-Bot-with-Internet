@@ -196,9 +196,9 @@ bot.command("talk", async (ctx) => {
   ctx.reply(insult);
 });
 
+//Boit on transcribe
 
-//Bot on transcribe command
-
+const path = require('path');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 
@@ -232,9 +232,24 @@ bot.on('voice', async (ctx) => {
     filePath = convertedFilePath;
   }
 
-  const fileContent = fs.readFileSync(filePath);
+  // Create the directory if it doesn't exist
+  const directory = path.join(__dirname, 'voice');
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory);
+  }
 
-  const audioBytes = fileContent.toString('base64');
+  // Save the file to disk
+  const filename = `file_${Date.now()}.${fileExtension}`;
+  const fileFullPath = path.join(directory, filename);
+  try {
+    const fileContent = fs.readFileSync(filePath);
+    fs.writeFileSync(fileFullPath, fileContent);
+  } catch (err) {
+    console.error(err);
+    return ctx.reply('Error saving file to disk.');
+  }
+
+  const audioBytes = fs.readFileSync(fileFullPath).toString('base64');
 
   const audio = {
     content: audioBytes,
@@ -251,15 +266,21 @@ bot.on('voice', async (ctx) => {
     config: config,
   };
 
-  const [response] = await client.recognize(request);
-  const transcription = response.results
-    .map((result) => result.alternatives[0].transcript)
-    .join('\n');
+  try {
+    const [response] = await client.recognize(request);
+    const transcription = response.results
+      .map((result) => result.alternatives[0].transcript)
+      .join('\n');
 
-  // remove the file
-  fs.unlinkSync(filePath);
-
-  console.log(transcription);
+    console.log(transcription);
+    return ctx.reply(transcription);
+  } catch (err) {
+    console.error(err);
+    return ctx.reply('Error transcribing voice message.');
+  } finally {
+    // Remove the file
+    fs.unlinkSync(fileFullPath);
+  }
 });
 
 
