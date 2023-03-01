@@ -205,7 +205,7 @@ const fetch = require('node-fetch');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
-const client = new speech.SpeechClient({
+const speechClient = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
   credentials: {
     client_email: process.env.GOOGLE_CLIENT_EMAIL,
