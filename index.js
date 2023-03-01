@@ -200,6 +200,7 @@ bot.command("talk", async (ctx) => {
 const path = require('path');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
+const speech = require('@google-cloud/speech');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
