@@ -249,6 +249,14 @@ bot.on('voice', async (ctx) => {
   const filename = `file_${Date.now()}.${fileExtension}`;
   const fileFullPath = path.join(directory, filename);
   try {
+    fs.writeFileSync(fileFullPath, '');
+    console.log(`File ${fileFullPath} created.`);
+  } catch (err) {
+    console.error(`Error creating file ${fileFullPath}:`, err);
+    return ctx.reply('Error creating file.');
+  }
+
+  try {
     const fileContent = fs.readFileSync(filePath);
     fs.writeFileSync(fileFullPath, fileContent);
     console.log(`File saved to ${fileFullPath}.`);
