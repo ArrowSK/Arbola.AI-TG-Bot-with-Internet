@@ -15,6 +15,7 @@
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.0.3",
     "ffmpeg": "^0.0.4",
+    "fluent-ffmpeg": "^2.1.2",
     "fs": "^0.0.1-security",
     "mongoose": "^6.8.3",
     "node-postal": "^1.1.2",
