@@ -10,7 +10,6 @@ const {
 	const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
-const speech = require("@google-cloud/speech");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
@@ -194,114 +193,6 @@ async function generateInsult() {
 bot.command("talk", async (ctx) => {
   const insult = await generateInsult();
   ctx.reply(insult);
-});
-
-//Boit on transcribe
-
-const path = require('path');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
-
-ffmpeg.setFfmpegPath(ffmpegPath);
-
-const client = new speech.SpeechClient({
-  projectId: process.env.GOOGLE_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_API_KEY.replace(/\\n/g, '\n'),
-  },
-});
-
-bot.on('voice', async (ctx) => {
-  const { voice } = ctx.message;
-  const fileId = voice.file_id;
-  const file = await ctx.telegram.getFile(fileId);
-
-  const filePath = file.file_path;
-  const fileExtension = filePath.split('.').pop();
-
-  if (!['oga', 'ogg', 'opus'].includes(fileExtension)) {
-    const convertedFilePath = `converted.${fileExtension}`;
-    await new Promise((resolve, reject) => {
-      ffmpeg(filePath)
-        .toFormat('ogg')
-        .on('error', reject)
-        .on('end', resolve)
-        .save(convertedFilePath);
-    });
-    filePath = convertedFilePath;
-  }
-
-  // Create the directory if it doesn't exist
-  const directory = '/voice';
-  if (!fs.existsSync(directory)) {
-    console.log(`Directory ${directory} does not exist, creating...`);
-    try {
-      fs.mkdirSync(directory);
-      console.log(`Directory ${directory} created.`);
-    } catch (err) {
-      console.error(`Error creating directory ${directory}:`, err);
-      return ctx.reply('Error creating directory.');
-    }
-  }
-
-  // Save the file to disk
-  const filename = `file_${Date.now()}.${fileExtension}`;
-  const fileFullPath = path.join(__dirname, directory, filename);
-  try {
-    fs.writeFileSync(fileFullPath, '');
-    console.log(`File ${fileFullPath} created.`);
-  } catch (err) {
-    console.error(`Error creating file ${fileFullPath}:`, err);
-    return ctx.reply('Error creating file.');
-  }
-
-  try {
-    const fileContent = fs.readFileSync(filePath);
-    fs.writeFileSync(fileFullPath, fileContent);
-    console.log(`File saved to ${fileFullPath}.`);
-  } catch (err) {
-    console.error(`Error saving file to disk:`, err);
-    return ctx.reply('Error saving file to disk.');
-  }
-
-  const audioBytes = fs.readFileSync(fileFullPath).toString('base64');
-
-  const audio = {
-    content: audioBytes,
-  };
-
-  const config = {
-    encoding: 'OGG_OPUS',
-    sampleRateHertz: 48000,
-    languageCode: 'en-US',
-  };
-
-  const request = {
-    audio: audio,
-    config: config,
-  };
-
-  try {
-    const [response] = await client.recognize(request);
-    const transcription = response.results
-      .map((result) => result.alternatives[0].transcript)
-      .join('\n');
-
-    console.log(`Transcription: ${transcription}`);
-    return ctx.reply(transcription);
-  } catch (err) {
-    console.error(`Error transcribing voice message:`, err);
-    return ctx.reply('Error transcribing voice message.');
-  } finally {
-    // Remove the file
-    try {
-      fs.unlinkSync(fileFullPath);
-      console.log(`File ${fileFullPath} removed.`);
-    } catch (err) {
-      console.error(`Error removing file ${fileFullPath}:`, err);
-    }
-  }
 });
 
 
