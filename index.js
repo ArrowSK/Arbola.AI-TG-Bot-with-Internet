@@ -224,7 +224,7 @@ bot.on('voice', async (ctx) => {
       const recognizeStream = speechClient
         .streamingRecognize({
           config: {
-            encoding: 'WEBM_OPUS',
+            encoding: 'ENCODING_UNSPECIFIED',
             sampleRateHertz: 48000,
             languageCode: 'en-US',
           },
