@@ -202,6 +202,7 @@ const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const speech = require('@google-cloud/speech');
 const fetch = require('node-fetch');
+const https = require('https');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -216,31 +217,29 @@ const speechClient = new speech.SpeechClient({
 // Listen for voice messages sent to the bot
 bot.on('voice', async (ctx) => {
   try {
-    const fileLink = await ctx.telegram.getFileLink(ctx.message.voice.file_id);
-    const response = await fetch(fileLink);
-    const buffer = await response.buffer();
-
-    const recognizeStream = speechClient
-      .streamingRecognize({
-        config: {
-          encoding: 'OGG_OPUS',
-          sampleRateHertz: 48000,
-          languageCode: 'en-US',
-        },
-        interimResults: false,
-      })
-      .on('error', console.error)
-      .on('data', (data) => {
-        const transcript = data.results
-          .map((result) => result.alternatives[0].transcript)
-          .join('\n');
-        ctx.reply(transcript);
-      });
-
-    const tempFilePath = `./temp_${Date.now()}.oga`;
-    fs.writeFileSync(tempFilePath, buffer);
-
-    fs.createReadStream(tempFilePath).pipe(recognizeStream);
+    const voice = ctx.message.voice;
+    const fileLink = await ctx.telegram.getFileLink(voice.file_id);
+    
+    https.get(fileLink, (res) => {
+      const recognizeStream = speechClient
+        .streamingRecognize({
+          config: {
+            encoding: 'OGG_OPUS',
+            sampleRateHertz: 48000,
+            languageCode: 'en-US',
+          },
+          interimResults: false,
+        })
+        .on('error', console.error)
+        .on('data', (data) => {
+          const transcript = data.results
+            .map((result) => result.alternatives[0].transcript)
+            .join('\n');
+          ctx.reply(transcript);
+        });
+        
+      res.pipe(recognizeStream);
+    });
   } catch (err) {
     console.error(err);
     ctx.reply('An error occurred.');
