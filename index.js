@@ -195,57 +195,6 @@ bot.command("talk", async (ctx) => {
   ctx.reply(insult);
 });
 
-//Bot on transcribe
-
-const path = require('path');
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
-const ffmpeg = require('fluent-ffmpeg');
-const speech = require('@google-cloud/speech');
-const fetch = require('node-fetch');
-const https = require('https');
-
-ffmpeg.setFfmpegPath(ffmpegPath);
-
-const speechClient = new speech.SpeechClient({
-  projectId: process.env.GOOGLE_PROJECT_ID,
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_API_KEY.replace(/\\n/g, '\n'),
-  },
-});
-
-// Listen for voice messages sent to the bot
-bot.on('voice', async (ctx) => {
-  try {
-    const voice = ctx.message.voice;
-    const fileLink = await ctx.telegram.getFileLink(voice.file_id);
-    
-    https.get(fileLink, (res) => {
-      const recognizeStream = speechClient
-        .streamingRecognize({
-          config: {
-            encoding: 'ENCODING_UNSPECIFIED',
-            sampleRateHertz: 48000,
-            languageCode: 'en-US',
-          },
-          interimResults: false,
-        })
-        .on('error', console.error)
-        .on('data', (data) => {
-          const transcript = data.results
-            .map((result) => result.alternatives[0].transcript)
-            .join('\n');
-          ctx.reply(transcript);
-        });
-        
-      res.pipe(recognizeStream);
-    });
-  } catch (err) {
-    console.error(err);
-    ctx.reply('An error occurred.');
-  }
-});
-
 //Bot on you command
 
 bot.command("yo", async (ctx) => {
