@@ -195,6 +195,90 @@ bot.command("talk", async (ctx) => {
   ctx.reply(insult);
 });
 
+//Bot on transcribe
+
+const path = require('path');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+
+const client = new speech.SpeechClient({
+  projectId: process.env.GOOGLE_PROJECT_ID,
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_API_KEY.replace(/\\n/g, '\n'),
+  },
+});
+
+bot.on('voice', async (ctx) => {
+  const { voice } = ctx.message;
+  const fileId = voice.file_id;
+  const file = await ctx.telegram.getFile(fileId);
+
+  const filePath = file.file_path;
+  const fileExtension = filePath.split('.').pop();
+
+  if (!['oga', 'ogg', 'opus'].includes(fileExtension)) {
+    const convertedFilePath = `converted.${fileExtension}`;
+    await new Promise((resolve, reject) => {
+      ffmpeg(filePath)
+        .toFormat('ogg')
+        .on('error', reject)
+        .on('end', resolve)
+        .save(convertedFilePath);
+    });
+    filePath = convertedFilePath;
+  }
+
+  const audioBytes = await new Promise((resolve, reject) => {
+    const audioStream = fs.createReadStream(filePath);
+    const chunks = [];
+    audioStream.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+    audioStream.on('error', reject);
+    audioStream.on('end', () => {
+      const audioBuffer = Buffer.concat(chunks);
+      const audioBytes = audioBuffer.toString('base64');
+      resolve(audioBytes);
+    });
+  });
+
+  const audio = {
+    content: audioBytes,
+  };
+
+  const config = {
+    encoding: 'OGG_OPUS',
+    sampleRateHertz: 48000,
+    languageCode: 'en-US',
+  };
+
+  const request = {
+    audio: audio,
+    config: config,
+  };
+
+  try {
+    const [response] = await client.recognize(request);
+    const transcription = response.results
+      .map((result) => result.alternatives[0].transcript)
+      .join('\n');
+
+    console.log(`Transcription: ${transcription}`);
+    return ctx.reply(transcription);
+  } catch (err) {
+    console.error(`Error transcribing voice message:`, err);
+    return ctx.reply('Error transcribing voice message.');
+  } finally {
+    // Remove the file
+    if (filePath !== file.file_path) {
+      fs.unlinkSync(filePath);
+      console.log(`File ${filePath} removed.`);
+    }
+  }
+});
 
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
