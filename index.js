@@ -246,6 +246,8 @@ bot.on('voice', async (ctx) => {
   }
 });
 
+//Bot on you command
+
 bot.command("yo", async (ctx) => {
   const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
   logger.info(`Joke: ${ctx.from.username || ctx.from.first_name}: ${text}`);
