@@ -201,6 +201,7 @@ const path = require('path');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 const speech = require('@google-cloud/speech');
+const fetch = require('node-fetch');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -215,10 +216,10 @@ const client = new speech.SpeechClient({
 // Listen for voice messages sent to the bot
 bot.on('voice', async (ctx) => {
   try {
-    // Download the voice message to local disk
-    const voiceFile = await ctx.telegram.downloadVoice(ctx.message.voice.file_id);
+    const fileLink = await ctx.telegram.getFileLink(ctx.message.voice.file_id);
+    const response = await fetch(fileLink);
+    const buffer = await response.buffer();
 
-    // Create a new recognize stream
     const recognizeStream = speechClient
       .streamingRecognize({
         config: {
@@ -235,9 +236,11 @@ bot.on('voice', async (ctx) => {
           .join('\n');
         ctx.reply(transcript);
       });
-    
-    // Pipe the voice message to the recognize stream
-    fs.createReadStream(voiceFile).pipe(recognizeStream);
+
+    const tempFilePath = `./temp_${Date.now()}.oga`;
+    fs.writeFileSync(tempFilePath, buffer);
+
+    fs.createReadStream(tempFilePath).pipe(recognizeStream);
   } catch (err) {
     console.error(err);
     ctx.reply('An error occurred.');
