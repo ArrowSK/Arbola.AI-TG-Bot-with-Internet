@@ -199,10 +199,8 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
-const { spawn } = require('child_process');
-const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
 
-// Bot on transcribe command
 // Create a Speech-to-Text client with your Google Cloud credentials
 const client = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
@@ -223,7 +221,7 @@ bot.on('message', async (ctx) => {
       const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
       const response1 = await axios.get(fileUrl, { responseType: 'arraybuffer' });
       const fileBuffer = Buffer.from(response1.data);
-	  
+
       // Generate a unique file name for the audio message
       const fileName = `voice/${ctx.message.voice.file_unique_id}.${detectAudioFormat(fileBuffer)}`;
 
@@ -233,13 +231,24 @@ bot.on('message', async (ctx) => {
       }
       fs.writeFileSync(fileName, fileBuffer);
 
+      // Check if the audio format is supported by the Google Speech-to-Text API
+      const supportedAudioFormats = ['FLAC', 'LINEAR16', 'MULAW', 'AMR', 'AMR_WB', 'OGG_OPUS', 'SPEEX_WITH_HEADER_BYTE'];
+      const audioFormat = detectAudioFormat(fileBuffer);
+      if (!supportedAudioFormats.includes(audioFormat)) {
+        console.log(`Converting ${audioFormat} to FLAC for Google Speech-to-Text API compatibility...`);
+        const convertedFileName = `voice/${ctx.message.voice.file_unique_id}.flac`;
+        await convertAudioFile(fileName, convertedFileName);
+        fs.unlinkSync(fileName);
+        fileName = convertedFileName;
+      }
+
       // Detect the audio language
       const languageCode = await detectAudioLanguage(fileBuffer);
 
       // Transcribe the audio file with Speech-to-Text API
       const audioFilePath = `./${fileName}`;
       const config = {
-        encoding: detectAudioFormat(fileBuffer),
+        encoding: detectAudioFormat(fs.readFileSync(audioFilePath)),
         languageCode: languageCode,
       };
       const request = {
@@ -268,6 +277,66 @@ bot.on('message', async (ctx) => {
     }
   }
 });
+
+// Function to check the format of an audio file buffer
+function detectAudioFormat(buffer) {
+   // Check for the "RIFF" identifier at the beginning of the buffer
+    if (buffer.toString('ascii', 0, 4) === 'RIFF') {
+      // Check for the "WAVE" identifier at byte 8 of the buffer
+      if (buffer.toString('ascii', 8, 12) === 'WAVE') {
+        // Check for the "fmt " sub-chunk identifier at byte 12 of the buffer
+        if (buffer.toString('ascii', 12, 16) === 'fmt ') {
+          // Check for the PCM audio format (audio format code 1) at byte 20 of the buffer
+          if (buffer.readUInt16LE(20) === 1) {
+            // Check for the number of channels (mono or stereo) at byte 22 of the buffer
+            const numChannels = buffer.readUInt16LE(22);
+            if (numChannels === 1) {
+              return 'pcm_s16le';
+            } else if (numChannels === 2) {
+              return 'pcm_s16le';
+            }
+          }
+        }
+      }
+    }
+  
+    // If the format is not supported, convert it to a supported format using ffmpeg
+    return convertToSupportedFormat(buffer);
+  }
+
+  // Function to convert an audio file buffer to a supported format using ffmpeg
+  async function convertToSupportedFormat(buffer) {
+    // Create a temporary file to store the original audio buffer
+    const inputFile = `./temp/original.${detectAudioFormat(buffer)}`;
+    fs.writeFileSync(inputFile, buffer);
+
+    // Create a temporary file to store the converted audio buffer
+    const outputFile = `./temp/converted.${SUPPORTED_AUDIO_FORMAT}`;
+  
+    // Convert the original audio file to the supported format using ffmpeg
+    await new Promise((resolve, reject) => {
+      ffmpeg(inputFile)
+        .output(outputFile)
+        .on('end', () => {
+          console.log(`Audio file converted to ${SUPPORTED_AUDIO_FORMAT}.`);
+          resolve();
+        })
+        .on('error', (err) => {
+          console.error(err);
+          reject(err);
+        })
+        .run();
+    });
+
+    // Read the converted audio file into a buffer
+    const convertedBuffer = fs.readFileSync(outputFile);
+
+    // Delete the temporary files
+    fs.unlinkSync(inputFile);
+    fs.unlinkSync(outputFile);
+
+    return SUPPORTED_AUDIO_FORMAT;
+  }
 
 // Function to detect the audio file format
 
