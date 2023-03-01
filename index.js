@@ -247,7 +247,7 @@ bot.on('voice', async (ctx) => {
 
   // Save the file to disk
   const filename = `file_${Date.now()}.${fileExtension}`;
-  const fileFullPath = path.join(directory, filename);
+  const fileFullPath = path.join(__dirname, directory, filename);
   try {
     fs.writeFileSync(fileFullPath, '');
     console.log(`File ${fileFullPath} created.`);
