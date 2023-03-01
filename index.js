@@ -235,7 +235,14 @@ bot.on('voice', async (ctx) => {
   // Create the directory if it doesn't exist
   const directory = path.join(__dirname, 'voice');
   if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory);
+    console.log(`Directory ${directory} does not exist, creating...`);
+    try {
+      fs.mkdirSync(directory);
+      console.log(`Directory ${directory} created.`);
+    } catch (err) {
+      console.error(`Error creating directory ${directory}:`, err);
+      return ctx.reply('Error creating directory.');
+    }
   }
 
   // Save the file to disk
@@ -244,8 +251,9 @@ bot.on('voice', async (ctx) => {
   try {
     const fileContent = fs.readFileSync(filePath);
     fs.writeFileSync(fileFullPath, fileContent);
+    console.log(`File saved to ${fileFullPath}.`);
   } catch (err) {
-    console.error(err);
+    console.error(`Error saving file to disk:`, err);
     return ctx.reply('Error saving file to disk.');
   }
 
@@ -272,14 +280,19 @@ bot.on('voice', async (ctx) => {
       .map((result) => result.alternatives[0].transcript)
       .join('\n');
 
-    console.log(transcription);
+    console.log(`Transcription: ${transcription}`);
     return ctx.reply(transcription);
   } catch (err) {
-    console.error(err);
+    console.error(`Error transcribing voice message:`, err);
     return ctx.reply('Error transcribing voice message.');
   } finally {
     // Remove the file
-    fs.unlinkSync(fileFullPath);
+    try {
+      fs.unlinkSync(fileFullPath);
+      console.log(`File ${fileFullPath} removed.`);
+    } catch (err) {
+      console.error(`Error removing file ${fileFullPath}:`, err);
+    }
   }
 });
 
