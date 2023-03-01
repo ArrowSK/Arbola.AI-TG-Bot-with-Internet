@@ -233,7 +233,7 @@ bot.on('voice', async (ctx) => {
   }
 
   // Create the directory if it doesn't exist
-  const directory = '/app/voice';
+  const directory = path.join(__dirname, 'voice');
   if (!fs.existsSync(directory)) {
     console.log(`Directory ${directory} does not exist, creating...`);
     try {
