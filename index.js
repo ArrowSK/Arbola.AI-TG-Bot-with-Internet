@@ -199,9 +199,11 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 const ffmpeg = require('fluent-ffmpeg');
 
-// Create a Speech-to-Text client with your Google Cloud credentials
+ffmpeg.setFfmpegPath(ffmpegPath);
+
 const client = new speech.SpeechClient({
   projectId: process.env.GOOGLE_PROJECT_ID,
   credentials: {
@@ -210,169 +212,55 @@ const client = new speech.SpeechClient({
   },
 });
 
-// Define the Telegram bot command to transcribe audio messages
-bot.on('message', async (ctx) => {
-  const chatId = ctx.chat.id;
+bot.on('voice', async (ctx) => {
+  const { voice } = ctx.message;
+  const fileId = voice.file_id;
+  const file = await ctx.telegram.getFile(fileId);
 
-  // Check if the message contains an audio file
-  if (ctx.message.voice) {
-    try {
-      const voiceFile = await ctx.telegram.getFile(ctx.message.voice.file_id);
-      const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${voiceFile.file_path}`;
-      const response1 = await axios.get(fileUrl, { responseType: 'arraybuffer' });
-      const fileBuffer = Buffer.from(response1.data);
+  const filePath = file.file_path;
+  const fileExtension = filePath.split('.').pop();
 
-      // Generate a unique file name for the audio message
-      const fileName = `voice/${ctx.message.voice.file_unique_id}.${detectAudioFormat(fileBuffer)}`;
-
-      // Save the audio file to disk
-      if (!fs.existsSync('voice')) {
-        fs.mkdirSync('voice');
-      }
-      fs.writeFileSync(fileName, fileBuffer);
-
-      // Check if the audio format is supported by the Google Speech-to-Text API
-      const supportedAudioFormats = ['FLAC', 'LINEAR16', 'MULAW', 'AMR', 'AMR_WB', 'OGG_OPUS', 'SPEEX_WITH_HEADER_BYTE'];
-      const audioFormat = detectAudioFormat(fileBuffer);
-      if (!supportedAudioFormats.includes(audioFormat)) {
-        console.log(`Converting ${audioFormat} to FLAC for Google Speech-to-Text API compatibility...`);
-        const convertedFileName = `voice/${ctx.message.voice.file_unique_id}.flac`;
-        await convertAudioFile(fileName, convertedFileName);
-        fs.unlinkSync(fileName);
-        fileName = convertedFileName;
-      }
-
-      // Detect the audio language
-      const languageCode = await detectAudioLanguage(fileBuffer);
-
-      // Transcribe the audio file with Speech-to-Text API
-      const audioFilePath = `./${fileName}`;
-      const config = {
-        encoding: detectAudioFormat(fs.readFileSync(audioFilePath)),
-        languageCode: languageCode,
-      };
-      const request = {
-        audio: {
-          content: fs.readFileSync(audioFilePath).toString('base64')
-        },
-        config: config,
-      };
-      const [response2] = await client.recognize(request);
-      const transcription = response2.results
-        .map((result) => result.alternatives[0].transcript)
-        .join('\n');
-
-      // Send the transcription back to the user
-      ctx.reply(transcription);
-      fs.unlink(fileName, (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        console.log('Audio file deleted.');
-      });
-    } catch (err) {
-      console.error(err);
-      ctx.reply('An error occurred while transcribing the audio message.');
-    }
-  }
-});
-
-// Function to check the format of an audio file buffer
-function detectAudioFormat(buffer) {
-   // Check for the "RIFF" identifier at the beginning of the buffer
-    if (buffer.toString('ascii', 0, 4) === 'RIFF') {
-      // Check for the "WAVE" identifier at byte 8 of the buffer
-      if (buffer.toString('ascii', 8, 12) === 'WAVE') {
-        // Check for the "fmt " sub-chunk identifier at byte 12 of the buffer
-        if (buffer.toString('ascii', 12, 16) === 'fmt ') {
-          // Check for the PCM audio format (audio format code 1) at byte 20 of the buffer
-          if (buffer.readUInt16LE(20) === 1) {
-            // Check for the number of channels (mono or stereo) at byte 22 of the buffer
-            const numChannels = buffer.readUInt16LE(22);
-            if (numChannels === 1) {
-              return 'pcm_s16le';
-            } else if (numChannels === 2) {
-              return 'pcm_s16le';
-            }
-          }
-        }
-      }
-    }
-  
-    // If the format is not supported, convert it to a supported format using ffmpeg
-    return convertToSupportedFormat(buffer);
-  }
-
-  // Function to convert an audio file buffer to a supported format using ffmpeg
-  async function convertToSupportedFormat(buffer) {
-    // Create a temporary file to store the original audio buffer
-    const inputFile = `./temp/original.${detectAudioFormat(buffer)}`;
-    fs.writeFileSync(inputFile, buffer);
-
-    // Create a temporary file to store the converted audio buffer
-    const outputFile = `./temp/converted.${SUPPORTED_AUDIO_FORMAT}`;
-  
-    // Convert the original audio file to the supported format using ffmpeg
+  if (!['oga', 'ogg', 'opus'].includes(fileExtension)) {
+    const convertedFilePath = `converted.${fileExtension}`;
     await new Promise((resolve, reject) => {
-      ffmpeg(inputFile)
-        .output(outputFile)
-        .on('end', () => {
-          console.log(`Audio file converted to ${SUPPORTED_AUDIO_FORMAT}.`);
-          resolve();
-        })
-        .on('error', (err) => {
-          console.error(err);
-          reject(err);
-        })
-        .run();
+      ffmpeg(filePath)
+        .toFormat('ogg')
+        .on('error', reject)
+        .on('end', resolve)
+        .save(convertedFilePath);
     });
-
-    // Read the converted audio file into a buffer
-    const convertedBuffer = fs.readFileSync(outputFile);
-
-    // Delete the temporary files
-    fs.unlinkSync(inputFile);
-    fs.unlinkSync(outputFile);
-
-    return SUPPORTED_AUDIO_FORMAT;
+    filePath = convertedFilePath;
   }
 
-// Function to detect the audio file format
+  const fileContent = fs.readFileSync(filePath);
 
-function detectAudioFormat(audioBuffer) {
-  const fileSignature = audioBuffer.toString('hex', 0, 4);
-  switch (fileSignature) {
-    case '52494646': // WAV file format
-      return 'LINEAR16';
-    case '464f524d': // OGG file format
-      return 'OGG_OPUS';
-    case 'fff15080': // MP3 file format
-      return 'MP3';
-    case '3026b275': // AMR-WB file format
-      return 'AMR_WB';
-    case '23e29e00': // Opus file format
-      return 'OPUS';
-    default:
-      throw new Error('Unsupported audio file format.');
-  }
-}
+  const audioBytes = fileContent.toString('base64');
 
-// Function to detect the audio language
-async function detectAudioLanguage(audioBuffer) {
-  const [result] = await client.recognize({
-    audio: {
-      content: audioBuffer.toString('base64'),
-    },
-    config: {
-      encoding: 'FLAC',
-      sampleRateHertz: 16000,
-      enableAutomaticLanguageDetection: true,
-    },
-  });
-  return result.languageCode;
-}
+  const audio = {
+    content: audioBytes,
+  };
 
+  const config = {
+    encoding: 'OGG_OPUS',
+    sampleRateHertz: 48000,
+    languageCode: 'en-US',
+  };
+
+  const request = {
+    audio: audio,
+    config: config,
+  };
+
+  const [response] = await client.recognize(request);
+  const transcription = response.results
+    .map((result) => result.alternatives[0].transcript)
+    .join('\n');
+
+  // remove the file
+  fs.unlinkSync(filePath);
+
+  console.log(transcription);
+});
 
 
 bot.command("yo", async (ctx) => {
