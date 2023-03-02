@@ -82,7 +82,8 @@ bot.command("picture", async (ctx) => {
   }
 });
 
-// Bot on know command
+//Bot on know command
+
 const limiter = new Bottleneck({
   maxConcurrent: 1,
   minTime: 12000,
@@ -91,7 +92,7 @@ const limiter = new Bottleneck({
 bot.command("know", limiter.wrap(async (ctx) => {
   const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
 
-  logger.info(`Chat: ${ctx.chat.type === "private" ? "Private" : ctx.chat.title}: ${text}`);
+  logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
   if (text) {
     ctx.sendChatAction("typing");
@@ -114,11 +115,10 @@ bot.command("know", limiter.wrap(async (ctx) => {
   }
 }));
 
-// Bot on message
-bot.on("message", async (ctx) => {
-  if (ctx.chat.type === "private" && !ctx.message.text?.startsWith("/") && !ctx.message.text?.startsWith("@")) {
+bot.on('message', async (ctx) => {
+  if (ctx.message.chat.type === "private" && !ctx.message.text?.startsWith("/") && !ctx.message.text?.toLowerCase().includes("bot")) {
     const text = ctx.message.text;
-    logger.info(`Chat: ${ctx.chat.type === "private" ? "Private" : ctx.chat.title}: ${text}`);
+    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
