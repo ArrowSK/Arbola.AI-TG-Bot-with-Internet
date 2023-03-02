@@ -102,11 +102,14 @@ bot.command("know", limiter.wrap(async (ctx) => {
       ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
       : text;
     const res = await getChat(prompt);
-    const trimres = res.substring(0, 3900);
-    if (trimres) {
-      ctx.telegram.sendMessage(ctx.message.chat.id, `${trimres}`, {
-        reply_to_message_id: ctx.message.message_id,
-      });
+    const chunkSize = 3500;
+    if (res) {
+      for (let i = 0; i < res.length; i += chunkSize) {
+        const messageChunk = res.substring(i, i + chunkSize);
+        ctx.telegram.sendMessage(ctx.message.chat.id, `${messageChunk}`, {
+          reply_to_message_id: ctx.message.message_id,
+        });
+      }
     }
   } else {
     ctx.telegram.sendMessage(ctx.message.chat.id, "Please ask anything after /know", {
