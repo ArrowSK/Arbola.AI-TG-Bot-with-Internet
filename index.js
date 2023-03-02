@@ -115,27 +115,6 @@ bot.command("know", limiter.wrap(async (ctx) => {
   }
 }));
 
-bot.on('message', async (ctx) => {
-  if (ctx.message.chat.type === "private" && !ctx.message.text?.startsWith("/") && !ctx.message.text?.toLowerCase().includes("bot")) {
-    const text = ctx.message.text;
-    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-
-    ctx.sendChatAction("typing");
-    const searchResult = await googleSearch(text);
-    const trimmedResult = searchResult.substring(0, 1500);
-    const prompt = trimmedResult
-      ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
-      : text;
-    const res = await getChat(prompt);
-    const trimres = res.substring(0, 3900);
-    if (trimres) {
-      ctx.telegram.sendMessage(ctx.message.chat.id, `${trimres}`, {
-        reply_to_message_id: ctx.message.message_id,
-      });
-    }
-  }
-});
-
 // Function to perform a Google search
 
 async function googleSearch(query) {
