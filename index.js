@@ -200,10 +200,9 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
+const openai1 = require('openai-api');
 const OPENAI_API_KEY = process.env.API;
-const openaiClient = new openai(OPENAI_API_KEY);
-
-bot.start((ctx) => ctx.reply('Welcome! Send me a voice message to transcribe using whisper.'));
+const openaiClient = new openai1(OPENAI_API_KEY);
 
 bot.on('voice', async (ctx) => {
   try {
