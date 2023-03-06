@@ -198,29 +198,6 @@ bot.command("talk", async (ctx) => {
   ctx.reply(insult);
 });
 
-//Bot on transcribe command
-
-const openai1 = require('openai');
-const OPENAI_API_KEY = process.env.API;
-const openaiClient = new openai1(OPENAI_API_KEY);
-
-bot.on('voice', async (ctx) => {
-  try {
-    const fileId = ctx.update.message.voice.file_id;
-    const fileLink = await ctx.telegram.getFileLink(fileId);
-    const audioUrl = fileLink.href;
-
-    const audioBytes = await openaiClient.actions.util.transcribeAudio({
-      audio_url: audioUrl,
-      transcript_mode: 'whisper',
-    });
-
-    ctx.reply(`Transcription: ${audioBytes.text}`);
-  } catch (err) {
-    console.log(err);
-    ctx.reply('Sorry, an error occurred while transcribing the audio. Please try again later.');
-  }
-});
 
 //Bot on you command
 
