@@ -200,25 +200,27 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
-const fetch = require('node-fetch');
-require('dotenv').config();
+const OPENAI_API_KEY = process.env.API;
+const openaiClient = new openai(OPENAI_API_KEY);
+
+bot.start((ctx) => ctx.reply('Welcome! Send me a voice message to transcribe using whisper.'));
 
 bot.on('voice', async (ctx) => {
-  const fileId = ctx.message.voice.file_id;
-  const file = await bot.telegram.getFile(fileId);
-  const url = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
+  try {
+    const fileId = ctx.update.message.voice.file_id;
+    const fileLink = await ctx.telegram.getFileLink(fileId);
+    const audioUrl = fileLink.href;
 
-  const res = await fetch('https://api.openai.com/v1/speech-to-text', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.API}`
-    },
-    body: JSON.stringify({ audio: url })
-  });
+    const audioBytes = await openaiClient.actions.util.transcribeAudio({
+      audio_url: audioUrl,
+      transcript_mode: 'whisper',
+    });
 
-  const transcription = await res.json();
-  ctx.reply(`Transcription: ${transcription.text}`);
+    ctx.reply(`Transcription: ${audioBytes.text}`);
+  } catch (err) {
+    console.log(err);
+    ctx.reply('Sorry, an error occurred while transcribing the audio. Please try again later.');
+  }
 });
 
 //Bot on you command
