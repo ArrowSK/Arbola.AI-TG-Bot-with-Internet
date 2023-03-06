@@ -198,6 +198,29 @@ bot.command("talk", async (ctx) => {
   ctx.reply(insult);
 });
 
+//Bot on transcribe command
+
+const fetch = require('node-fetch');
+require('dotenv').config();
+
+bot.on('voice', async (ctx) => {
+  const fileId = ctx.message.voice.file_id;
+  const file = await bot.telegram.getFile(fileId);
+  const url = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
+
+  const res = await fetch('https://api.openai.com/v1/speech-to-text', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.API}`
+    },
+    body: JSON.stringify({ audio: url })
+  });
+
+  const transcription = await res.json();
+  ctx.reply(`Transcription: ${transcription.text}`);
+});
+
 //Bot on you command
 
 bot.command("yo", async (ctx) => {
