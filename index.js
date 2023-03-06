@@ -200,7 +200,7 @@ bot.command("talk", async (ctx) => {
 
 //Bot on transcribe command
 
-const openai1 = require('openai-api');
+const openai1 = require('openai');
 const OPENAI_API_KEY = process.env.API;
 const openaiClient = new openai1(OPENAI_API_KEY);
 
