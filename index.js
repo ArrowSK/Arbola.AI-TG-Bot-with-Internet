@@ -99,7 +99,7 @@ bot.command("know", limiter.wrap(async (ctx) => {
     const searchResult = await googleSearch(text);
     const trimmedResult = searchResult.substring(0, 1500);
 const prompt = trimmedResult
-      ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
+      ? `${text} Be specific. Prefer scientific evidence. Be rational. Take into account the following up-to-date information from the Internet: ${trimmedResult}`
       : text;
 	  const OriginRes = await getChat(prompt);
 	  const res = OriginRes.replace("As an AI language model, ", "");
