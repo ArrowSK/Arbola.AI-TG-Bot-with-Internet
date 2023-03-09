@@ -31,7 +31,7 @@ const getChat = async (text) => {
 		temperature: 0.3,
 });
 
-    return response.data.choices[0].content;
+    return response.data.choices[0].text;
   } catch (error) {
     console.log(error);
     logger.error("Error while generating Answer");
