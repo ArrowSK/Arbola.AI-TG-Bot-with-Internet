@@ -48,13 +48,6 @@ bot.help((ctx) => {
   );
 });
 
-bot.use(async (ctx, next) => {
-  if (ctx.chat.type === "private") {
-    ctx.message.text = "/know " + ctx.message.text;
-  }
-  await next();
-});
-
 //Bot on Image command
 bot.command("picture", async (ctx) => {
   const text = ctx.message.text?.replace("/picture", "")?.trim().toLowerCase();
