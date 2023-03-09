@@ -48,6 +48,13 @@ bot.help((ctx) => {
   );
 });
 
+bot.use(async (ctx, next) => {
+  if (ctx.chat.type === "private") {
+    ctx.message.text = "/know " + ctx.message.text;
+  }
+  await next();
+});
+
 //Bot on Image command
 bot.command("picture", async (ctx) => {
   const text = ctx.message.text?.replace("/picture", "")?.trim().toLowerCase();
@@ -99,9 +106,8 @@ bot.command("know", limiter.wrap(async (ctx) => {
     const trimmedResult = searchResult.substring(0, 1500);
 const prompt = trimmedResult
       ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
-        .replace('As an AI language model', '') // remove 'scientific evidence' from the prompt
       : text;
-    const res = await getChat(prompt);
+    const res = await getChat(prompt).replace('As an AI language model', '') // remove 'scientific evidence' from the prompt;
     const chunkSize = 3500;
     if (res) {
       for (let i = 0; i < res.length; i += chunkSize) {
