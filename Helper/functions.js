@@ -24,18 +24,14 @@ const getImage = async (text) => {
 // Generate answer from prompt
 const getChat = async (text) => {
   try {
-    const response = await openai.createCompletion({
-      model: "text-curie-001",
-      prompt: text,
-      temperature: 0.3,
-      top_p: 0.9,
-      frequency_penalty: 0.2,
-      presence_penalty: 0.05,
+    const response wait openai.createChatCompletion({
+  model: "gpt-3.5-turbo",
+  messages: [{role: "user", content: text}],
       max_tokens: 900,
-      stop: ["\"\"\""],
-    });
+		temperature: 0.3,
+});
 
-    return response.data.choices[0].text;
+    return response.data.choices[0].content;
   } catch (error) {
     console.log(error);
     logger.error("Error while generating Answer");
