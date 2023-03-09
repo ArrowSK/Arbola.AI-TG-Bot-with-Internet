@@ -13,7 +13,6 @@ const logger = require("./Helper/logger");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
-const cheerio = require('cheerio');
 const { Markup } = require('telegraf');
 
 const configuration = new Configuration({
