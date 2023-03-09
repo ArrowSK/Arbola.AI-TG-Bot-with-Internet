@@ -70,8 +70,6 @@ bot.on("message", async (ctx) => {
   } else {
     // Code to handle messages in groups or channels
     // ...
-  }
-});
 
 
 
@@ -210,5 +208,6 @@ bot.command('send', async (ctx) => {
 
   }
 });
+
 
 bot.launch();
