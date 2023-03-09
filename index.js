@@ -98,11 +98,12 @@ bot.command("know", limiter.wrap(async (ctx) => {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
     const trimmedResult = searchResult.substring(0, 1500);
-const prompt = trimmedResult
-      ? `${text} Be specific. Prefer scientific evidence. Be rational. Take into account the following up-to-date information from the Internet: ${trimmedResult}`
+    const today = new Date().toLocaleDateString();
+    const prompt = trimmedResult
+      ? `${text} Be specific. Prefer scientific evidence. Be rational. Take into account the following information from the Internet as of ${today}: ${trimmedResult}`
       : text;
-	  const OriginRes = await getChat(prompt);
-	  const res = OriginRes.replace("As an AI language model, ", "");
+    const OriginRes = await getChat(prompt);
+    const res = OriginRes.replace("As an AI language model, ", "");
     const chunkSize = 3500;
     if (res) {
       for (let i = 0; i < res.length; i += chunkSize) {
