@@ -67,8 +67,12 @@ bot.on("message", async (ctx) => {
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
+  } else {
+    // Code to handle messages in groups or channels
+    // ...
   }
 });
+
 
 
 //Bot on Image command
@@ -121,7 +125,7 @@ bot.command("know", limiter.wrap(async (ctx) => {
     const searchResult = await googleSearch(text);
     const trimmedResult = searchResult.substring(0, 1500);
     const prompt = trimmedResult
-      ? `${text} Be specific. Remove AI disclaimer. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
+      ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
       : text;
     const res = await getChat(prompt);
     const chunkSize = 3500;
@@ -201,6 +205,9 @@ bot.command('send', async (ctx) => {
   } catch (error) {
     console.error(error);
     ctx.reply('An error occurred while sending the message');
+  }
+});
+
   }
 });
 
