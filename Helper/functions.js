@@ -24,7 +24,7 @@ const getImage = async (text) => {
 // Generate answer from prompt
 const getChat = async (text) => {
   try {
-    const response wait openai.createChatCompletion({
+    const response = await openai.createChatCompletion({
   model: "gpt-3.5-turbo",
   messages: [{role: "user", content: text}],
       max_tokens: 900,
