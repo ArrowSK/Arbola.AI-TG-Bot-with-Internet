@@ -107,7 +107,8 @@ bot.command("know", limiter.wrap(async (ctx) => {
 const prompt = trimmedResult
       ? `${text} Be specific. Do not repeat the prompt. Prefer scientific evidence. Be rational. Bear sexuality in mind. This is current info from the internet, you can use it but do not repeat: ${trimmedResult}`
       : text;
-    const res = await getChat(prompt).replace('As an AI language model', '') // remove 'scientific evidence' from the prompt;
+	  const OriginRes = await getChat(prompt);
+	  const res = OriginRes.replace("As an AI language model, ", "");
     const chunkSize = 3500;
     if (res) {
       for (let i = 0; i < res.length; i += chunkSize) {
