@@ -48,6 +48,28 @@ bot.help((ctx) => {
   );
 });
 
+bot.on("message", async (ctx) => {
+  if (ctx.chat.type === "private") { // check if the message is sent from a private chat
+    const text = ctx.message.text?.trim().toLowerCase();
+
+    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
+
+    if (text && !text.startsWith('/')) { // add condition to exclude messages that start with "/"
+      ctx.sendChatAction("typing");
+      const res = await getChat(text);
+      const chunkSize = 3500;
+      if (res) {
+        for (let i = 0; i < res.length; i += chunkSize) {
+          const messageChunk = res.substring(i, i + chunkSize);
+          ctx.telegram.sendMessage(ctx.message.chat.id, `${messageChunk}`);
+        }
+      }
+    } else {
+      ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
+    }
+  }
+});
+
 //Bot on Image command
 bot.command("picture", async (ctx) => {
   const text = ctx.message.text?.replace("/picture", "")?.trim().toLowerCase();
