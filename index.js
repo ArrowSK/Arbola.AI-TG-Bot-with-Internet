@@ -182,38 +182,4 @@ bot.command('send', async (ctx) => {
   }
 });
 
-//Bot on talk command
-
-
-async function generateInsult() {
-  const url = "https://sweary.com/";
-  const response = await axios.get(url);
-  const $ = cheerio.load(response.data);
-  const insult = $("#words").text().trim();
-  return insult;
-}
-
-bot.command("talk", async (ctx) => {
-  const insult = await generateInsult();
-  ctx.reply(insult);
-});
-
-
-//Bot on you command
-
-bot.command("yo", async (ctx) => {
-  const text = ctx.message.text?.replace("/yo", "")?.trim().toLowerCase();
-  logger.info(`Joke: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-
-  const ress = await axios.get("https://api.yomomma.info/");
-
-  ctx.sendChatAction("typing");
-
-  if (ress.data?.joke) {
-    ctx.telegram.sendMessage(ctx.message.chat.id, ress.data?.joke, {
-      reply_to_message_id: ctx.message.message_id,
-    });
-  }
-});
-
 bot.launch();
