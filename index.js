@@ -98,7 +98,7 @@ bot.command("know", limiter.wrap(async (ctx) => {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
     const trimmedResult = searchResult.substring(0, 1500);
-    const today = new Date().toLocaleDateString();
+    const today = new Date().toLocaleDateString("en-GB");
     const prompt = trimmedResult
       ? `${text} Be specific. Prefer scientific evidence. Be rational. You have the most up-to-date info. Knowledge cutoff: ${today} Current date: ${today} This is most recent, online result from the Internet as of ${today}: ${trimmedResult}`
       : text;
