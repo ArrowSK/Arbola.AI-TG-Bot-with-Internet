@@ -49,108 +49,27 @@ bot.help((ctx) => {
 });
 
 
-//Bot on know command
+bot.on("message", async (ctx) => {
+  if (ctx.chat.type === "private") { // check if the message is sent from a private chat
+    const text = ctx.message.text?.trim().toLowerCase();
 
-const limiter = new Bottleneck({
-  maxConcurrent: 1,
-  minTime: 12000,
-});
+    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
-bot.command("know", limiter.wrap(async (ctx) => {
-  const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
-
-  logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-
-  if (text) {
-    ctx.sendChatAction("typing");
-    const searchResult = await googleSearch(text);
-    const trimmedResult = searchResult.substring(0, 1500);
-    const today = new Date().toLocaleDateString("en-GB", {year: "numeric",
-  month: "long",
-  day: "numeric",});
-    const prompt = trimmedResult
-      ? `${text} Be specific. Prefer scientific evidence. Be rational. You have the most up-to-date info. Knowledge cutoff: ${today} Current date: ${today} This is most recent, online result from the Internet as of ${today}: ${trimmedResult}`
-      : text;
-    const OriginRes = await getChat(prompt);
-    const res = OriginRes.replace("As an AI language model, ", "");
-    const chunkSize = 3500;
-    if (res) {
-      for (let i = 0; i < res.length; i += chunkSize) {
-        const messageChunk = res.substring(i, i + chunkSize);
-        ctx.telegram.sendMessage(ctx.message.chat.id, `${messageChunk}`, {
-          reply_to_message_id: ctx.message.message_id,
-        });
+    if (text && !text.startsWith('/')) { // add condition to exclude messages that start with "/"
+      ctx.sendChatAction("typing");
+      const res = await getChat(text);
+      const chunkSize = 3500;
+      if (res) {
+        for (let i = 0; i < res.length; i += chunkSize) {
+          const messageChunk = res.substring(i, i + chunkSize);
+          ctx.telegram.sendMessage(ctx.message.chat.id, `${messageChunk}`);
+        }
       }
+    } else {
+      ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
-  } else {
-    ctx.telegram.sendMessage(ctx.message.chat.id, "Please ask anything after /know", {
-      reply_to_message_id: ctx.message.message_id,
-    });
-  }
-}));
-
-// Function to perform a Google search
-
-async function googleSearch(query) {
-  const cx = process.env.CUSTOM_SEARCH_ID;
-  const apiKey = process.env.GOOGLE_API_KEY;
-  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUK&uomSystem=metric`;
-
-  try {
-    const response = await axios.get(url);
-    if (response.data.items && response.data.items[0]) {
-      return response.data.items[0].snippet;
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Bot on gram command
-bot.command("gram", async (ctx) => {
-  const text = ctx.message.text?.replace("/gram", "")?.trim().toLowerCase();
-
-  if (text) {
-    ctx.sendChatAction("typing");
-    const res = await correctEngish(text);
-    if (res) {
-      ctx.telegram.sendMessage(ctx.message.chat.id, res, {
-        reply_to_message_id: ctx.message.message_id,
-      });
-    }
-  } else {
-    ctx.telegram.sendMessage(
-      ctx.message.chat.id,
-      "Please ask anything after /en",
-      {
-        reply_to_message_id: ctx.message.message_id,
-      }
-    );
   }
 });
 
-
-//Bot on send command
-
-bot.command('send', async (ctx) => {
-  const args = ctx.message.text.split(' ');
-  const chatId = args[1];
-  const message = args.slice(2).join(' ');
-
-  // Check if user is authorized to send message
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev"]; // Replace with authorized user IDs
-  if (!allowedUsernames.includes(ctx.chat.username)) {
-    return ctx.reply('Nope. Wont do.');
-  }
-
-  // Send message using bot's Telegram instance
-  try {
-    await bot.telegram.sendMessage(chatId, message);
-    ctx.reply('Message sent!');
-  } catch (error) {
-    console.error(error);
-    ctx.reply('An error occurred while sending the message');
-  }
-});
 
 bot.launch();
