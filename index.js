@@ -48,7 +48,6 @@ bot.help((ctx) => {
   );
 });
 
-const Bottleneck = require('bottleneck');
 const limiter = new Bottleneck({
   reservoir: 5,
   reservoirRefreshAmount: 5,
