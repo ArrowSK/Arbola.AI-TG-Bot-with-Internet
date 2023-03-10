@@ -48,6 +48,13 @@ bot.help((ctx) => {
   );
 });
 
+const Bottleneck = require('bottleneck');
+const limiter = new Bottleneck({
+  reservoir: 5,
+  reservoirRefreshAmount: 5,
+  reservoirRefreshInterval: 60 * 1000,
+  maxConcurrent: 1,
+});
 
 bot.on("message", async (ctx) => {
   if (ctx.chat.type === "private") { // check if the message is sent from a private chat
