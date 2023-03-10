@@ -57,7 +57,8 @@ bot.on("message", async (ctx) => {
 
     if (text && !text.startsWith('/')) { // add condition to exclude messages that start with "/"
       ctx.sendChatAction("typing");
-      const res = await getChat(text);
+	  const OriginRes = await limiter.schedule(() => getChat(text));
+	  const res = OriginRes.replace("As an AI language model, ", "");
       const chunkSize = 3500;
       if (res) {
         for (let i = 0; i < res.length; i += chunkSize) {
