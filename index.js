@@ -49,39 +49,6 @@ bot.help((ctx) => {
 });
 
 
-//Bot on Image command
-bot.command("picture", async (ctx) => {
-  const text = ctx.message.text?.replace("/picture", "")?.trim().toLowerCase();
-  logger.info(`Image: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-  if (text) {
-    const res = await getImage(text);
-
-    if (res) {
-      ctx.sendChatAction("upload_photo");
-
-      ctx.telegram.sendPhoto(ctx.message.chat.id, res, {
-        reply_to_message_id: ctx.message.message_id,
-      });
-    } else {
-      ctx.telegram.sendMessage(
-        ctx.message.chat.id,
-        "Please go entertain yourself with smth else," || ctx.from.first_name|| "\n\n. Or be banned",
-        {
-          reply_to_message_id: ctx.message.message_id,
-        }
-      );
-    }
-  } else {
-    ctx.telegram.sendMessage(
-      ctx.message.chat.id,
-      "You have to give some description after /picture",
-      {
-        reply_to_message_id: ctx.message.message_id,
-      }
-    );
-  }
-});
-
 //Bot on know command
 
 const limiter = new Bottleneck({
