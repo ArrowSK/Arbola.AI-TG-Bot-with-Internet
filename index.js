@@ -7,7 +7,7 @@ const {
   correctEngish,
 } = require("./Helper/functions");
 
-	const { Telegraf } = require("telegraf");
+const { Telegraf } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
 const fs = require("fs");
@@ -65,7 +65,7 @@ bot.on("message", async (ctx) => {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
-      const messageList = await ctx.telegram.getChatHistory(chatId, { limit: messageCount });
+      const messageList = await ctx.getChatHistory(chatId, { limit: messageCount });
       const messages = messageList.map(msg => ({
         role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
         content: msg.text
