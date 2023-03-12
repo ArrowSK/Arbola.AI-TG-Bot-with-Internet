@@ -22,6 +22,7 @@
     "https": "^1.0.0",
     "ioredis": "^5.3.1",
     "mongoose": "^6.8.3",
+    "node-cron": "^3.0.2",
     "node-postal": "^1.1.2",
     "openai": "^3.1.0",
     "path": "^0.12.7",

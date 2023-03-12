@@ -14,7 +14,7 @@ const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
 const Redis = require("ioredis");
-const redisClient = new Redis("redis://default:ht7SmgVLohmsh0tjl2kK@containers-us-west-103.railway.app:5520");
+const redisClient = new Redis(process.env.REDIS_URL);
 
 
 const configuration = new Configuration({
@@ -29,7 +29,7 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg"];
+  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg", "EvaCamomile"];
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
@@ -90,6 +90,36 @@ bot.on("message", async (ctx) => {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
   }
+});
+
+//Clean DB daily
+
+const cron = require('node-cron');
+const { promisify } = require('util');
+
+// Schedule a task to run every day at midnight CET (Central European Time)
+cron.schedule('0 0 * * *', async () => {
+  // Get current UTC date and time
+  const now = new Date();
+
+  // Set timezone to CET
+  now.setUTCHours(now.getUTCHours() + 1);
+
+  // Set time to midnight CET
+  now.setUTCHours(0, 0, 0, 0);
+
+  // Convert date and time to timestamp in milliseconds
+  const timestamp = now.getTime();
+
+  // Get Redis client
+  const redisClient = getRedisClient();
+
+  // Delete all Redis keys that are older than 24 hours
+  const deleteAsync = promisify(redisClient.del).bind(redisClient);
+  await deleteAsync(redisClient.keys('*').filter(key => key.endsWith('_history') && key.startsWith('chat_history_') && Number(key.split('_').pop()) < timestamp));
+}, {
+  scheduled: true,
+  timezone: 'Europe/Paris',
 });
 
 bot.launch();
