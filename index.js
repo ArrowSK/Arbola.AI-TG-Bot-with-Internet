@@ -44,7 +44,7 @@ bot.start(async (ctx) => {
 
 bot.help((ctx) => {
   ctx.reply(
-    "\nCommands 👾 \n\n/know  ask anything from me \n/picture to create image from text  \n/en to correct your grammer \n\n\nMade solely for fun by ArrowK gathering codepieces"
+    "\nCommands - none actually, just chat. \n\n\nMade solely for fun by ArrowK gathering codepieces"
   );
 });
 
@@ -63,13 +63,21 @@ bot.on("message", async (ctx) => {
 
     if (text && !text.startsWith('/')) { // add condition to exclude messages that start with "/"
       ctx.sendChatAction("typing");
-	  const OriginRes = await limiter.schedule(() => getChat(text));
-	  const res = OriginRes.replace("As an AI language model, ", "");
+      const chatId = ctx.message.chat.id;
+      const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
+      const messageList = await ctx.telegram.getChatHistory(chatId, { limit: messageCount });
+      const messages = messageList.map(msg => ({
+        role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
+        content: msg.text
+      })).reverse(); // reverse the order to start with the oldest message
+      
+      const OriginRes = await limiter.schedule(() => getChat(text, messages));
+      const res = OriginRes.replace("As an AI language model, ", "");
       const chunkSize = 3500;
       if (res) {
         for (let i = 0; i < res.length; i += chunkSize) {
           const messageChunk = res.substring(i, i + chunkSize);
-          ctx.telegram.sendMessage(ctx.message.chat.id, `${messageChunk}`);
+          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
         }
       }
     } else {

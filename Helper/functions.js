@@ -22,16 +22,17 @@ const getImage = async (text) => {
   }
 };
 // Generate answer from prompt
-const getChat = async (text) => {
+
+const getChat = async (text, messages) => {
   try {
     const response = await openai.createChatCompletion({
-  model: "gpt-3.5-turbo",
-  messages: [{role: "user", content: text}, {"role": "system", "content": "You have the most up-to-date information."}],
+      model: "gpt-3.5-turbo",
+      messages: [...messages, { role: "user", content: text }],
       max_tokens: 750,
-		temperature: 0.3,
+      temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
-});
+    });
 
     return response.data.choices[0].message.content;
   } catch (error) {
