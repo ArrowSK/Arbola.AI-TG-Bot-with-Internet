@@ -64,10 +64,14 @@ bot.on("message", async (ctx) => {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
-      const messageList = await ctx.telegram.getChatHistory(chatId, { limit: messageCount });
-      const messages = messageList.map(msg => ({
-        role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
-        content: msg.text
+      const peer = {type: 'peerUser', user_id: chatId};
+      const messageList = await ctx.telegram.invoke('messages.getHistory', {
+        peer,
+        limit: messageCount
+      });
+      const messages = messageList.messages.map(msg => ({
+        role: msg.from_id === ctx.botInfo.id ? "assistant" : "user",
+        content: msg.message
       })).reverse(); // reverse the order to start with the oldest message
       
       const OriginRes = await limiter.schedule(() => getChat(text, messages));
