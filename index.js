@@ -13,6 +13,9 @@ const logger = require("./Helper/logger");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
+const session = require('telegraf/session');
+const Redis = require("ioredis");
+const redisClient = new Redis();
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -64,7 +67,16 @@ bot.on("message", async (ctx) => {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
-      const messageList = await ctx.telegram.getHistory(chatId, { limit: messageCount });
+      let messageList = [];
+      const redisKey = `chat_history_${chatId}`;
+      const exists = await redisClient.exists(redisKey);
+      if (exists) {
+        messageList = await redisClient.lrange(redisKey, 0, messageCount - 1);
+      } else {
+        const history = await ctx.telegram.getMessages(chatId, { limit: messageCount });
+        messageList = history.map(msg => msg.text);
+        await redisClient.rpush(redisKey, ...messageList);
+      }
       const messages = messageList.map(msg => ({
         role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
         content: msg.text
