@@ -13,7 +13,6 @@ const logger = require("./Helper/logger");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
-const session = require('telegraf/session');
 const Redis = require("ioredis");
 const redisClient = new Redis();
 
