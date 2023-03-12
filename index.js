@@ -65,7 +65,7 @@ bot.on("message", async (ctx) => {
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
       const peer = {type: 'peerUser', user_id: chatId};
-      const messageList = await ctx.telegram.invoke('messages.getHistory', {
+      const messageList = await ctx.messages.getHistory ({
         peer,
         limit: messageCount
       });
