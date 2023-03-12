@@ -11,8 +11,10 @@
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@google-cloud/speech": "^5.3.1",
+    "@types/redis": "^4.0.11",
     "axios": "^1.2.2",
     "bottleneck": "^2.19.5",
+    "debug": "^4.3.4",
     "dotenv": "^16.0.3",
     "ffmpeg": "^0.0.4",
     "fluent-ffmpeg": "^2.1.2",
@@ -24,7 +26,9 @@
     "path": "^0.12.7",
     "pino": "^8.8.0",
     "pino-pretty": "^9.1.1",
+    "redis": "^4.6.5",
     "telegraf": "^4.11.2",
+    "telegraf-session-redis": "^5.1.0",
     "util": "^0.12.5"
   }
 }
