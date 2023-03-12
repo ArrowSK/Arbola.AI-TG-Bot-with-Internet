@@ -63,16 +63,8 @@ bot.on("message", async (ctx) => {
     if (text && !text.startsWith('/')) { // add condition to exclude messages that start with "/"
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
-      const chatInfo = await ctx.telegram.getChat(chatId);
-      const chatMembers = chatInfo.members;
       const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
-      const messageList = [];
-      for (let member of chatMembers) {
-        if (member.user.id !== ctx.botInfo.id) { // exclude messages sent by the bot itself
-          const memberMessages = await ctx.telegram.getChatHistory(chatId, { limit: messageCount, userId: member.user.id });
-          messageList.push(...memberMessages.messages);
-        }
-      }
+      const messageList = await ctx.telegram.getHistory(chatId, { limit: messageCount, userId: member.user.id });
       const messages = messageList.map(msg => ({
         role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
         content: msg.text
