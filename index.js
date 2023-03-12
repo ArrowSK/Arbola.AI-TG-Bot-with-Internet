@@ -14,7 +14,7 @@ const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
 const Redis = require("ioredis");
-const redisClient = new Redis(process.env.REDIS_URL);
+const redisClient = new Redis(process.env.REDIS_DT);
 
 
 const configuration = new Configuration({
