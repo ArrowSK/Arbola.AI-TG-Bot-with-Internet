@@ -14,7 +14,8 @@ const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
 const Redis = require("ioredis");
-const redisClient = new Redis();
+const redisClient = new Redis("redis://default:ht7SmgVLohmsh0tjl2kK@containers-us-west-103.railway.app:5520");
+
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -57,30 +58,19 @@ const limiter = new Bottleneck({
 });
 
 bot.on("message", async (ctx) => {
-  if (ctx.chat.type === "private") { // check if the message is sent from a private chat
+  if (ctx.chat.type === "private") {
     const text = ctx.message.text?.trim().toLowerCase();
-
     logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-
-    if (text && !text.startsWith('/')) { // add condition to exclude messages that start with "/"
+    if (text && !text.startsWith('/')) {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
-      const messageCount = Math.min(ctx.message.message_id - 1, 10); // get up to 10 messages, or all messages if there are less than 10
-      let messageList = [];
+      const messageCount = Math.min(ctx.message.message_id - 1, 10);
       const redisKey = `chat_history_${chatId}`;
-      const exists = await redisClient.exists(redisKey);
-      if (exists) {
-        messageList = await redisClient.lrange(redisKey, 0, messageCount - 1);
-      } else {
-        const history = await ctx.telegram.getMessages(chatId, { limit: messageCount });
-        messageList = history.map(msg => msg.text);
-        await redisClient.rpush(redisKey, ...messageList);
-      }
+      let messageList = await redisClient.lrange(redisKey, 0, messageCount - 1);
       const messages = messageList.map(msg => ({
         role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
         content: msg.text
-      })).reverse(); // reverse the order to start with the oldest message
-      
+      })).reverse();
       const OriginRes = await limiter.schedule(() => getChat(text, messages));
       const res = OriginRes.replace("As an AI language model, ", "");
       const chunkSize = 3500;
@@ -90,11 +80,15 @@ bot.on("message", async (ctx) => {
           ctx.telegram.sendMessage(chatId, `${messageChunk}`);
         }
       }
+      await redisClient.rpush(redisKey, JSON.stringify({
+        text: text,
+        from: ctx.message.from,
+        message_id: ctx.message.message_id,
+      }));
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
   }
 });
-
 
 bot.launch();
