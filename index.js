@@ -66,12 +66,18 @@ bot.on("message", async (ctx) => {
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10);
       const redisKey = `chat_history_${chatId}`;
-	  let messageList = await redisClient.lrange(redisKey, 0, messageCount - 1);
-	  messageList = messageList.map(msg => JSON.parse(msg));
-      const messages = messageList.map(msg => ({
-        role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
-        content: msg.text
-      })).reverse();
+      let messageList = await redisClient.lrange(redisKey, 0, messageCount - 1);
+      messageList = messageList.map((msg) => JSON.parse(msg));
+      const messages = [
+        {
+          role: "system",
+          content: "You are an ancient Greek philosopher Socrates. Please answer like he would.",
+        },
+        ...messageList.map((msg) => ({
+          role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
+          content: msg.text,
+        })),
+      ].reverse();
       const OriginRes = await limiter.schedule(() => getChat(text, messages));
       const res = OriginRes.replace("As an AI language model, ", "");
       const chunkSize = 3500;
@@ -81,11 +87,11 @@ bot.on("message", async (ctx) => {
           ctx.telegram.sendMessage(chatId, `${messageChunk}`);
         }
       }
-	  await redisClient.rpush(redisKey, JSON.stringify({
-text: ctx.message.text,
-from: ctx.message.from,
-message_id: ctx.message.message_id,
-	  }));
+      await redisClient.rpush(redisKey, JSON.stringify({
+        text: ctx.message.text,
+        from: ctx.message.from,
+        message_id: ctx.message.message_id,
+      }));
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
