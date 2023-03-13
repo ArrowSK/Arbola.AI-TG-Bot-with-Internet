@@ -111,9 +111,6 @@ cron.schedule('0 0 * * *', async () => {
   // Convert date and time to timestamp in milliseconds
   const timestamp = now.getTime();
 
-  // Get Redis client
-  const redisClient = getRedisClient();
-
   // Delete all Redis keys that are older than 24 hours
   const deleteAsync = promisify(redisClient.del).bind(redisClient);
   await deleteAsync(redisClient.keys('*').filter(key => key.endsWith('_history') && key.startsWith('chat_history_') && Number(key.split('_').pop()) < timestamp));
