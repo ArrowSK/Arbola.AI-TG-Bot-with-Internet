@@ -82,9 +82,9 @@ bot.on("message", async (ctx) => {
         }
       }
 	  await redisClient.rpush(redisKey, JSON.stringify({
-	      text: messageList[0].text,
-	      from: messageList[0].from,
-	      message_id: messageList[0].message_id,
+text: ctx.message.text,
+from: ctx.message.from,
+message_id: ctx.message.message_id,
 	  }));
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
