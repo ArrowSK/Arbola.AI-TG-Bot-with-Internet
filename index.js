@@ -71,7 +71,7 @@ bot.on("message", async (ctx) => {
       const messages = [
         {
           role: "system",
-          content: "You are an ancient Greek philosopher Socrates. Please answer like he would.",
+          content: "You are an ancient Greek philosopher Diogenes. Please answer like he would.",
         },
         ...messageList.map((msg) => ({
           role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
