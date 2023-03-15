@@ -1,5 +1,6 @@
 AI Bot 🧿 - Arbola.AI
-This is a simple Telegram bot that uses OpenAI's GPT-3 API to generate human-like responses. It can perform a Google search, generate an image from text and correct grammar errors.
+
+This is a simple Telegram bot that uses OpenAI's API to generate human-like responses. It can perform a Google search, generate an image from text and correct grammar errors.
 
 Commands
 
@@ -47,3 +48,5 @@ util: The Node.js util module provides a collection of utility functions.
 bottleneck: Job scheduler and rate limiter.
 
 cheerio: A fast, flexible, and lean implementation of core jQuery for the server.
+
+Based on the initial code from https://github.com/ChetanXpro
