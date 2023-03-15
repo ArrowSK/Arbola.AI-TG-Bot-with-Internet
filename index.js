@@ -9,7 +9,7 @@ const { Telegraf, Extra, Markup, session } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
 const Bottleneck = require("bottleneck");
-const Redis = require("ioredis");
+const { MongoClient } = require('mongodb');
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -59,9 +59,18 @@ bot.on("message", async (ctx) => {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10);
-      const redisKey = `chat_history_${chatId}`;
-      let messageList = await redisClient.lrange(redisKey, 0, messageCount - 1);
-      messageList = messageList.map((msg) => JSON.parse(msg));
+      const mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+      const collection = mongoClient.db().collection('chat_history');
+      let messageList = await collection.findOneAndUpdate(
+        { chatId },
+        { $push: { messages: {
+            text: ctx.message.text,
+            from: ctx.message.from,
+            message_id: ctx.message.message_id,
+          } } },
+        { returnOriginal: false, upsert: true }
+      );
+      messageList = messageList.value.messages.slice(-messageCount).reverse();
       const messages = [
         {
           role: "system",
@@ -86,21 +95,18 @@ bot.on("message", async (ctx) => {
 	  
 	  res = null;
 	  
-      await redisClient.rpush(redisKey, JSON.stringify({
-        text: ctx.message.text,
-        from: ctx.message.from,
-        message_id: ctx.message.message_id,
-      }));
+      mongoClient.close();
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
   }
 });
 
-//Clean DB daily
-
 const cron = require('node-cron');
-const { promisify } = require('util');
+
+// MongoDB connection URI and options
+const uri = process.env.MONGODB_URI;
+const options = { useNewUrlParser: true, useUnifiedTopology: true };
 
 // Schedule a task to run every day at midnight CET (Central European Time)
 cron.schedule('0 0 * * *', async () => {
@@ -116,9 +122,22 @@ cron.schedule('0 0 * * *', async () => {
   // Convert date and time to timestamp in milliseconds
   const timestamp = now.getTime();
 
-  // Delete all Redis keys that are older than 24 hours
-  const deleteAsync = promisify(redisClient.del).bind(redisClient);
-  await deleteAsync(redisClient.keys('*').filter(key => key.endsWith('_history') && key.startsWith('chat_history_') && Number(key.split('_').pop()) < timestamp));
+  // Connect to MongoDB
+  const client = await MongoClient.connect(uri, options);
+
+  try {
+    // Get a reference to the chat_history collection
+    const collection = client.db().collection('chat_history');
+
+    // Delete all documents that are older than 24 hours
+    await collection.deleteMany({ 
+      timestamp: { $lt: timestamp }, 
+      key: /^chat_history_\d+$/,
+    });
+  } finally {
+    // Close the MongoDB connection
+    client.close();
+  }
 }, {
   scheduled: true,
   timezone: 'Europe/Paris',
