@@ -61,16 +61,21 @@ bot.on("message", async (ctx) => {
       const messageCount = Math.min(ctx.message.message_id - 1, 10);
       const mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
       const collection = mongoClient.db().collection('chat_history');
-      let messageList = await collection.findOneAndUpdate(
-        { chatId },
-        { $push: { messages: {
-            text: ctx.message.text,
-            from: ctx.message.from,
-            message_id: ctx.message.message_id,
-          } } },
-        { returnOriginal: false, upsert: true }
-      );
-      messageList = messageList.value.messages.slice(-messageCount).reverse();
+	  let messageList = await collection.findOneAndUpdate(
+	    { chatId },
+	    { $push: { messages: {
+	        text: ctx.message.text,
+	        from: ctx.message.from,
+	        message_id: ctx.message.message_id,
+	      } } },
+	    { returnOriginal: false, upsert: true }
+	  );
+
+	  if (!messageList || !messageList.value || !messageList.value.messages) {
+	    messageList = { value: { messages: [] } };
+	  }
+
+	  messageList = messageList.value.messages.slice(-messageCount).reverse();
       const messages = [
         {
           role: "system",
