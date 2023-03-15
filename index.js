@@ -3,19 +3,13 @@ const { Configuration, OpenAIApi } = require("openai");
 const {
   getImage,
   getChat,
-
   correctEngish,
 } = require("./Helper/functions");
-
-const { Telegraf, Telegram, Extra, Markup, session } = require("telegraf");
+const { Telegraf, Extra, Markup, session } = require("telegraf");
 const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
-const fs = require("fs");
-const util = require("util");
 const Bottleneck = require("bottleneck");
 const Redis = require("ioredis");
-const redisClient = new Redis(process.env.REDIS_DT);
-
 
 const configuration = new Configuration({
   apiKey: process.env.API,
