@@ -87,6 +87,11 @@ bot.on("message", async (ctx) => {
           ctx.telegram.sendMessage(chatId, `${messageChunk}`);
         }
       }
+	  
+	  // Force the garbage collector to run
+	  
+	  res = null;
+	  
       await redisClient.rpush(redisKey, JSON.stringify({
         text: ctx.message.text,
         from: ctx.message.from,
