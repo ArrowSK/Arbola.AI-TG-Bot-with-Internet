@@ -1,30 +1,43 @@
-AI Bot 🧿 - Arbola.AI
-This is a simple Telegram bot that uses OpenAI's GPT-3 API to generate human-like responses. It can perform a Google search, generate an image from text and correct grammar errors.
+This code is for an OpenAI-powered Telegram bot. Users can communicate with the bot to get responses to their queries using OpenAI's language model. It reflects the personality of Oscar Wilde and is set to answer like he would.
 
-Commands
-/know: This command performs a Google search on the given text and returns a human-like response. For example: /know What is the capital of France?.
-/picture: This command generates an image from the given text. For example: /picture A cat sitting on a couch.
-/en: This command corrects grammar errors in the given text. For example: /en I has a apple.
-/help: This command lists all available commands.
+Prerequisites
+
+Node.js
+
+Redis
 
 Installation
-To run this bot, you'll need to have Node.js and npm installed. Then, follow these steps:
 
-Clone this repository.
-Install the required packages by running npm install.
-Create a .env file and set the following environment variables:
-API: Your OpenAI API key.
-TG_API: Your Telegram bot token.
-CUSTOM_SEARCH_ID: Your Google Custom Search ID.
-GOOGLE_API_KEY: Your Google API key.
-Run node index.js to start the bot.
+Clone the repository:
 
-Dependencies
-dotenv: Loads environment variables from a .env file.
-openai: Official OpenAI API wrapper for Node.js.
-telegraf: Modern Telegram Bot Framework for Node.js.
-axios: Promise based HTTP client for the browser and Node.js.
-winston: A logger for just about everything.
-util: The Node.js util module provides a collection of utility functions.
-bottleneck: Job scheduler and rate limiter.
-cheerio: A fast, flexible, and lean implementation of core jQuery for the server.
+git clone https://github.com/arrowk/chatbot.git
+
+Install the dependencies:
+
+npm install
+
+Set the environment variables. Create a file named .env in the root directory and add the following:
+
+makefile
+
+REDIS_DT=your-redis-endpoint-here
+
+TG_API=your-telegram-bot-token-here
+
+API=your-openai-api-key-here
+
+Start the bot:
+
+npm start
+
+Usage
+
+Just talk to the bot.
+
+Additional Notes
+
+This bot only responds to private messages.
+
+The chat history is saved to Redis and is deleted every day at midnight CET.
+
+Only certain Telegram usernames are allowed to access the bot (you can set your own via index.js)
