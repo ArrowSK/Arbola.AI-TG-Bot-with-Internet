@@ -27,7 +27,7 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg"];
+  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg", "EvaCamomile"];
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
@@ -38,6 +38,7 @@ bot.start(async (ctx) => {
       );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
+      ctx.reply("Sorry, you are not authorized to use this bot.");
     }
   }
 });
