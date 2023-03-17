@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "node --max-old-space-size=100 --max-memory-restart=200 index.js",
+    "startCommand": "pm2 start index.js --max-memory-restart 160 --node-args='--max-old-space-size=150'",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
