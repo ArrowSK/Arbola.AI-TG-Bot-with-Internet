@@ -34,6 +34,7 @@ bot.start(async (ctx) => {
       );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
+      ctx.reply("Sorry, you are not authorized to use this bot.");
     }
   }
 });
