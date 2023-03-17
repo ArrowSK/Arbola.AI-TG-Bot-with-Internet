@@ -9,13 +9,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "axios": "^1.2.2",
     "bottleneck": "^2.19.5",
     "debug": "^4.3.4",
     "dotenv": "^16.0.3",
     "ffmpeg": "^0.0.4",
-    "fluent-ffmpeg": "^2.1.2",
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
     "mongodb": "^5.1.0",
