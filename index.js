@@ -44,12 +44,42 @@ bot.help((ctx) => {
   );
 });
 
+//Chat itself
+
 const limiter = new Bottleneck({
   reservoir: 5,
   reservoirRefreshAmount: 5,
   reservoirRefreshInterval: 60 * 1000,
   maxConcurrent: 1,
 });
+
+let mongoClient = null;
+
+//MongoDB connection
+
+async function connectToMongoDB() {
+  if (!mongoClient) {
+    try {
+      mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+    } catch (err) {
+      logger.error(err);
+    }
+  }
+}
+
+//MongoDB disconnection
+
+async function closeMongoDBConnection() {
+  if (mongoClient) {
+    try {
+      await mongoClient.close();
+    } catch (err) {
+      logger.error(err);
+    } finally {
+      mongoClient = null;
+    }
+  }
+}
 
 bot.on("message", async (ctx) => {
   if (ctx.chat.type === "private") {
@@ -59,23 +89,36 @@ bot.on("message", async (ctx) => {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10);
-      const mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+      await connectToMongoDB();
       const collection = mongoClient.db().collection('chat_history');
-	  let messageList = await collection.findOneAndUpdate(
-	    { chatId },
-	    { $push: { messages: {
-	        text: ctx.message.text,
-	        from: ctx.message.from,
-	        message_id: ctx.message.message_id,
-	      } } },
-	    { returnOriginal: false, upsert: true }
-	  );
-
-	  if (!messageList || !messageList.value || !messageList.value.messages) {
-	    messageList = { value: { messages: [] } };
-	  }
-
-	  messageList = messageList.value.messages.slice(-messageCount).reverse();
+      const query = { chatId };
+      const projection = { messages: { $slice: -messageCount } };
+      const update = { $push: { messages: {
+          text: ctx.message.text,
+          from: ctx.message.from,
+          message_id: ctx.message.message_id,
+        } } };
+      const options = { returnOriginal: false, upsert: true };
+      let messageList = null;
+      let closed = false;
+      const timeout = setTimeout(() => {
+        closeMongoDBConnection();
+        closed = true;
+      }, 5 * 60 * 1000);
+      try {
+        messageList = await collection.findOneAndUpdate(query, update, options, projection);
+      } catch (err) {
+        logger.error(err);
+      } finally {
+        clearTimeout(timeout);
+        if (!closed) {
+          closeMongoDBConnection();
+        }
+      }
+      if (!messageList || !messageList.messages) {
+        messageList = { messages: [] };
+      }
+      messageList = messageList.messages.reverse();
       const messages = [
         {
           role: "system",
@@ -99,13 +142,13 @@ bot.on("message", async (ctx) => {
 	  // Force the garbage collector to run
 	  
 	  res = null;
-	  
-      mongoClient.close();
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
   }
 });
+
+//Daily DB cleanup
 
 const cron = require('node-cron');
 
