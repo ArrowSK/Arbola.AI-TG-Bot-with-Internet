@@ -123,7 +123,7 @@ bot.on("message", async (ctx) => {
       const messages = [
         {
           role: "system",
-          content: "You are an Oscar Wilde, British writer. Please answer like he would. Answer in the language of the user prompt.",
+          content: "You are an Oscar Wilde, British writer. Answer like he would.",
         },
         ...messageList.map((msg) => ({
           role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
