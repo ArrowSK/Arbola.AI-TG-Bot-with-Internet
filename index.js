@@ -23,7 +23,7 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg", "EvaCamomile"];
+  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg", "EvaCamomile", "antonsvens"];
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
@@ -89,7 +89,7 @@ bot.on("message", async (ctx) => {
     if (text && !text.startsWith('/')) {
       ctx.sendChatAction("typing");
       const chatId = ctx.message.chat.id;
-      const messageCount = Math.min(ctx.message.message_id - 1, 10);
+      const messageCount = Math.min(ctx.message.message_id - 1, 15);
       await connectToMongoDB();
       const collection = mongoClient.db().collection('chat_history');
       const query = { chatId };
@@ -123,7 +123,7 @@ bot.on("message", async (ctx) => {
       const messages = [
         {
           role: "system",
-          content: "You are an Oscar Wilde, British writer. Please answer like he would.",
+          content: "You are an Oscar Wilde, British writer. Please answer like he would. Answer in the language of the user prompt.",
         },
         ...messageList.map((msg) => ({
           role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
