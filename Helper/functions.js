@@ -45,4 +45,4 @@ async function googleSearch(query) {
 }
 
 
-module.exports = { openai, getImage, getChat, correctEngish, googleSearch };
+module.exports = { openai, getChat, googleSearch };
