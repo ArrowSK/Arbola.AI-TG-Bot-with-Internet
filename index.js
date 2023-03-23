@@ -12,6 +12,8 @@ const Bottleneck = require("bottleneck");
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
 const fs = require("fs");
+const WitAPI = require('wit-api');
+const witClient = new WitAPI(process.env.WIT_AI_API_KEY);
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -45,6 +47,22 @@ bot.help((ctx) => {
   ctx.reply(
     "\nCommands - none actually, just chat. \n\n\nMade solely for fun by ArrowK gathering codepieces"
   );
+});
+
+//Voice handling
+
+bot.on('voice', async (ctx) => {
+  try {
+    const fileId = ctx.message.voice.file_id;
+    const file = await ctx.telegram.getFile(fileId);
+    const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
+    const fileBuffer = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+    const result = await witClient.speech(fileBuffer.data, { 'Content-Type': 'audio/mpeg3' });
+    ctx.reply(result._text);
+  } catch (err) {
+    console.error(err);
+    ctx.reply('Error transcribing voice message.');
+  }
 });
 
 //Chat itself
