@@ -47,6 +47,17 @@ bot.help((ctx) => {
   );
 });
 
+//Voice handling
+
+bot.on("voice", async (ctx) => {
+  const fileId = ctx.message.voice.file_id;
+  const file = await bot.telegram.getFile(fileId);
+  const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
+  const fileBuffer = await axios.get(fileUrl, { responseType: "arraybuffer" });
+  const transcription = await openai.createTranscription(fileBuffer.data, "whisper-1");
+  ctx.reply(transcription.text);
+});
+
 //Chat itself
 
 const limiter = new Bottleneck({
@@ -151,16 +162,6 @@ bot.on("message", async (ctx) => {
   }
 });
 
-//Voice handling
-
-bot.on("voice", async (ctx) => {
-  const fileId = ctx.message.voice.file_id;
-  const file = await bot.telegram.getFile(fileId);
-  const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
-  const fileBuffer = await axios.get(fileUrl, { responseType: "arraybuffer" });
-  const transcription = await openai.createTranscription(fileBuffer.data, "whisper-1");
-  ctx.reply(transcription.text);
-});
 
 //Daily DB cleanup
 
