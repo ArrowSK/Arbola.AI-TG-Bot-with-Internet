@@ -11,6 +11,7 @@ const logger = require("./Helper/logger");
 const Bottleneck = require("bottleneck");
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
+const fs = require("fs");
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -148,6 +149,17 @@ bot.on("message", async (ctx) => {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
   }
+});
+
+//Voice handling
+
+bot.on("voice", async (ctx) => {
+  const fileId = ctx.message.voice.file_id;
+  const file = await bot.telegram.getFile(fileId);
+  const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
+  const fileBuffer = await axios.get(fileUrl, { responseType: "arraybuffer" });
+  const transcription = await openai.createTranscription(fileBuffer.data, "whisper-1");
+  ctx.reply(transcription.text);
 });
 
 //Daily DB cleanup
