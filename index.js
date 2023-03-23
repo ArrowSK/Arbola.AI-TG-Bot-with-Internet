@@ -10,6 +10,7 @@ const { default: axios } = require("axios");
 const logger = require("./Helper/logger");
 const Bottleneck = require("bottleneck");
 const { MongoClient } = require('mongodb');
+const cron = require('node-cron');
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -151,45 +152,26 @@ bot.on("message", async (ctx) => {
 
 //Daily DB cleanup
 
-const cron = require('node-cron');
-
-// MongoDB connection URI and options
 const uri = process.env.MONGODB_URI;
 const options = { useNewUrlParser: true, useUnifiedTopology: true };
 
-// Schedule a task to run every day at midnight CET (Central European Time)
-cron.schedule('0 0 * * *', async () => {
-  // Get current UTC date and time
-  const now = new Date();
-
-  // Set timezone to CET
-  now.setUTCHours(now.getUTCHours() + 1);
-
-  // Set time to midnight CET
-  now.setUTCHours(0, 0, 0, 0);
-
-  // Convert date and time to timestamp in milliseconds
-  const timestamp = now.getTime();
-
-  // Connect to MongoDB
+const cleanupDB = async () => {
   const client = await MongoClient.connect(uri, options);
-
   try {
-    // Get a reference to the chat_history collection
-    const collection = client.db().collection('chat_history');
-
-    // Delete all documents that are older than 24 hours
-    await collection.deleteMany({ 
-      timestamp: { $lt: timestamp }, 
-      key: /^chat_history_\d+$/,
-    });
+    const db = client.db();
+    const collection = db.collection('chat_history');
+    const result = await collection.deleteMany({ createdAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } });
+    console.log(`Deleted ${result.deletedCount} documents from the database.`);
+  } catch (err) {
+    console.log(err);
   } finally {
-    // Close the MongoDB connection
     client.close();
   }
-}, {
-  scheduled: true,
-  timezone: 'Europe/Paris',
+};
+
+// Schedule a task to run every day at midnight CET (Central European Time)
+cron.schedule('0 0 * * *', cleanupDB, {
+  timezone: 'Europe/Paris'
 });
 
 bot.launch();
