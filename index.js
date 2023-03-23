@@ -12,8 +12,7 @@ const Bottleneck = require("bottleneck");
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
 const fs = require("fs");
-const WitAPI = require('wit-api');
-const witClient = new WitAPI(process.env.WIT_AI_API_KEY);
+const witAiToken = process.env.WIT_AI_API_KEY;
 
 const configuration = new Configuration({
   apiKey: process.env.API,
@@ -57,8 +56,12 @@ bot.on('voice', async (ctx) => {
     const file = await ctx.telegram.getFile(fileId);
     const fileUrl = `https://api.telegram.org/file/bot${process.env.TG_API}/${file.file_path}`;
     const fileBuffer = await axios.get(fileUrl, { responseType: 'arraybuffer' });
-    const result = await witClient.speech(fileBuffer.data, { 'Content-Type': 'audio/mpeg3' });
-    ctx.reply(result._text);
+    const headers = {
+      Authorization: `Bearer ${witAiToken}`,
+      'Content-Type': 'audio/mpeg3',
+    };
+    const response = await axios.post('https://api.wit.ai/speech', fileBuffer.data, { headers });
+    ctx.reply(response.data.text);
   } catch (err) {
     console.error(err);
     ctx.reply('Error transcribing voice message.');
