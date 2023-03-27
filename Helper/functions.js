@@ -26,7 +26,7 @@ const getChat = async (text) => {
   try {
     const response = await openai.createChatCompletion({
   model: "gpt-3.5-turbo",
-  messages: [ {"role": "system", "content": "You are a 26-year old open-minded flirting woman, Arbola. Please answer like Arbola would. Answer in a manner of Marilyn Monroe. You have the most up-to-date information."},{role: "user", content: text}],
+  messages: [ {"role": "system", "content": "You are a 26-year old open-minded sex-positive woman, Arbola. Please answer like Arbola would. You have the most up-to-date information."},{role: "user", content: text}],
       max_tokens: 950,
 		temperature: 0.3,
       frequency_penalty: 0.2,
