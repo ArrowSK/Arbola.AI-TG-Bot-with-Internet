@@ -22,6 +22,8 @@ module.exports = openai;
 
 const bot = new Telegraf(process.env.TG_API);
 
+const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
+
 // Bot on start
 
 bot.start(async (ctx) => {
@@ -109,10 +111,16 @@ bot.command('setprompt', (ctx) => {
 });
 
 bot.on('message', async (ctx) => {
-  if (ctx.chat.type === 'private') {
-    const text = ctx.message.text?.trim().toLowerCase();
-    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
-    if (text && !text.startsWith('/')) {
+	if (ctx.chat.type === 'private') {
+	    const text = ctx.message.text?.trim().toLowerCase();
+	    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
+
+	    // Check if user is authorized
+	    if (!allowedUsernames.includes(ctx.from.username)) {
+	      ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
+	      return;
+	    }
+	    if (text && !text.startsWith('/')) {
       ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 10);
