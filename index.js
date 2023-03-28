@@ -22,10 +22,11 @@ module.exports = openai;
 
 const bot = new Telegraf(process.env.TG_API);
 
+const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
+
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
