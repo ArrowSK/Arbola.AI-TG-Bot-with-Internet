@@ -25,14 +25,14 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg", "EvaCamomile", "antonsvens"];
+  const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
     if (allowedUsernames.includes(ctx.chat.username)) {
       logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
       ctx.reply(
-        "Welcome To AI Bot 🧿 \n\n I have the personality of an Oscar Wilde. Just talk with me! \n\n\nMade solely for fun by ArrowK gathering codepieces"
+        "Welcome To AI Bot 🧿 \n\n Just talk with me! If you dare...\n\n\nMade solely for fun by ArrowK gathering codepieces"
       );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
