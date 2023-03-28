@@ -84,12 +84,36 @@ async function closeMongoDBConnection() {
   }
 }
 
-bot.on("message", async (ctx) => {
-  if (ctx.chat.type === "private") {
+const prompts = new Map([
+  ['wilde', 'You are an Oscar Wilde, British writer. Answer like he would.'],
+  ['dawkins', 'Pretend you are Richard Dawkins. Answer like he would.'],
+  ['friedman', 'You are Milton Friedman, an American libertarian economist. Answer like he would.'],
+  ['slaanesh', 'You are Slaanesh, from Warhammer 40,000 universe. Answer like it would.'],
+]);
+
+let selectedPrompt = 'wilde';
+
+bot.command('setprompt', (ctx) => {
+  const userId = ctx.from.id;
+  if (userId !== YOUR_USER_ID) {
+    ctx.reply('Sorry, only the owner can change the prompt.');
+    return;
+  }
+  const promptName = ctx.message.text.split(' ')[1];
+  if (!prompts.has(promptName)) {
+    ctx.reply(`Invalid prompt name. Available prompts are: ${Array.from(prompts.keys()).join(', ')}`);
+    return;
+  }
+  selectedPrompt = promptName;
+  ctx.reply(`Prompt set to: ${prompts.get(promptName)}`);
+});
+
+bot.on('message', async (ctx) => {
+  if (ctx.chat.type === 'private') {
     const text = ctx.message.text?.trim().toLowerCase();
     logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
     if (text && !text.startsWith('/')) {
-      ctx.sendChatAction("typing");
+      ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 15);
       await connectToMongoDB();
@@ -97,10 +121,10 @@ bot.on("message", async (ctx) => {
       const query = { chatId };
       const projection = { messages: { $slice: -messageCount } };
       const update = { $push: { messages: {
-          text: ctx.message.text,
-          from: ctx.message.from,
-          message_id: ctx.message.message_id,
-        } } };
+        text: ctx.message.text,
+        from: ctx.message.from,
+        message_id: ctx.message.message_id,
+      } } };
       const options = { returnOriginal: false, upsert: true };
       let messageList = null;
       let closed = false;
@@ -124,16 +148,16 @@ bot.on("message", async (ctx) => {
       messageList = messageList.messages.reverse();
       const messages = [
         {
-          role: "system",
-          content: "You are an Oscar Wilde, British writer. Answer like he would.",
+          role: 'system',
+          content: prompts.get(selectedPrompt),
         },
         ...messageList.map((msg) => ({
-          role: msg.from.id === ctx.botInfo.id ? "assistant" : "user",
+          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
           content: msg.text,
         })),
       ].reverse();
       const OriginRes = await limiter.schedule(() => getChat(text, messages));
-      let res = OriginRes.replace("As an AI language model, ", "");
+      let res = OriginRes.replace('As an AI language model, ', '');
       const chunkSize = 3500;
       if (res) {
         for (let i = 0; i < res.length; i += chunkSize) {
