@@ -27,7 +27,7 @@ const bot = new Telegraf(process.env.TG_API);
 // Bot on start
 
 bot.start(async (ctx) => {
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev", "ValeryEErg", "EvaCamomile"];
+  const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
   if (ctx.chat.type === "group") {
     logger.info(`Bot started In: ${ctx.chat.title} `);
   } else if (ctx.chat.type === "private") {
@@ -172,7 +172,7 @@ bot.command('send', async (ctx) => {
   const message = args.slice(2).join(' ');
 
   // Check if user is authorized to send message
-  const allowedUsernames = ["artemskov", "OlgaVKov", "AndreKovalev"]; // Replace with authorized user IDs
+  const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');// Replace with authorized user IDs
   if (!allowedUsernames.includes(ctx.chat.username)) {
     return ctx.reply('Nope. Wont do.');
   }
