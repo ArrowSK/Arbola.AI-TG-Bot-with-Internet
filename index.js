@@ -109,9 +109,15 @@ bot.command('setprompt', (ctx) => {
 });
 
 bot.on('message', async (ctx) => {
-  if (ctx.chat.type === 'private') {
-    const text = ctx.message.text?.trim().toLowerCase();
-    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
+	if (ctx.chat.type === 'private') {
+	    const text = ctx.message.text?.trim().toLowerCase();
+	    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
+
+	    // Check if user is authorized
+	    if (!allowedUsernames.includes(ctx.from.username)) {
+	      ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
+	      return;
+	    }
     if (text && !text.startsWith('/')) {
       ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
@@ -169,11 +175,11 @@ bot.on('message', async (ctx) => {
 	  // Force the garbage collector to run
 	  
 	  res = null;
-    } else {
-      ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
+  } else {
+        ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
+      }
     }
-  }
-});
+  });
 
 
 //Daily DB cleanup
