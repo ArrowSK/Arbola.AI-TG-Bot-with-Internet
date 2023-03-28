@@ -87,10 +87,20 @@ bot.command("picture", async (ctx) => {
 
 const limiter = new Bottleneck({
   maxConcurrent: 1,
-  minTime: 12000,
+  minTime: 5000,
+  maxRequests: 10,
+  duration: 60000,
 });
 
 bot.command("know", limiter.wrap(async (ctx) => {
+  if (ctx.chat.type === 'private') {
+    const isAuthorized = allowedUsernames.includes(ctx.from.username);
+    if (!isAuthorized) {
+      ctx.reply("Sorry, you are not authorized to use this bot.");
+      return;
+    }
+  }
+
   const text = ctx.message.text?.replace("/know", "")?.trim().toLowerCase();
 
   logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
@@ -99,9 +109,11 @@ bot.command("know", limiter.wrap(async (ctx) => {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
     const trimmedResult = searchResult.substring(0, 1500);
-    const today = new Date().toLocaleDateString("en-GB", {year: "numeric",
-  month: "long",
-  day: "numeric",});
+    const today = new Date().toLocaleDateString("en-GB", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
     const prompt = trimmedResult
       ? `${text} Be specific. Prefer scientific evidence. Be rational. You have the most up-to-date info. Knowledge cutoff: ${today} Current date: ${today} This is most recent, online result from the Internet as of ${today}: ${trimmedResult}`
       : text;
