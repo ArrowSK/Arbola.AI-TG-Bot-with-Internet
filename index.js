@@ -91,7 +91,7 @@ const prompts = new Map([
   ['slaanesh', 'You are Slaanesh, from Warhammer 40,000 universe. Answer like it would.'],
 ]);
 
-let selectedPrompt = 'wilde';
+let selectedPrompt = 'slaanesh';
 
 bot.command('setprompt', (ctx) => {
   const userId = ctx.from.id;
@@ -115,7 +115,7 @@ bot.on('message', async (ctx) => {
     if (text && !text.startsWith('/')) {
       ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
-      const messageCount = Math.min(ctx.message.message_id - 1, 15);
+      const messageCount = Math.min(ctx.message.message_id - 1, 10);
       await connectToMongoDB();
       const collection = mongoClient.db().collection('chat_history');
       const query = { chatId };
