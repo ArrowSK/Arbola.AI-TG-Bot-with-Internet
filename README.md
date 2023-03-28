@@ -5,7 +5,7 @@ This code is for an OpenAI-powered Telegram bot. Users can communicate with the 
 ## Prerequisites
 
 - Node.js
-- Redis
+- Mongodb
 
 ## Installation
 
@@ -22,7 +22,7 @@ This code is for an OpenAI-powered Telegram bot. Users can communicate with the 
 3. Set the environment variables. Create a file named .env in the root directory and add the following:
 
     ```makefile
-    REDIS_DT=your-redis-endpoint-here
+    MONGODB_URI=your-mongodb-endpoint-here
     TG_API=your-telegram-bot-token-here
     API=your-openai-api-key-here
 
