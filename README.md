@@ -28,6 +28,7 @@ To run this bot, you'll need to have Node.js and npm installed. Then, follow the
   TG_API: Your Telegram bot token.
   CUSTOM_SEARCH_ID: Your Google Custom Search ID.
   GOOGLE_API_KEY: Your Google API key.
+  ALLOWED_USERNAMES: usernames of those who are allowed to use the chatbot
 ```
 
 4. Run node index.js to start the bot.
