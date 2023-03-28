@@ -25,6 +25,8 @@ This code is for an OpenAI-powered Telegram bot. Users can communicate with the 
     MONGODB_URI=your-mongodb-endpoint-here
     TG_API=your-telegram-bot-token-here
     API=your-openai-api-key-here
+    ALLOWED_USERNAMES=usernames of those who are allowed to use the chatbot
+    BOT_OWNER_USER_ID=your own user id in Telegram
 
 4. Start the bot:
 
