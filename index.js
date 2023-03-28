@@ -95,7 +95,7 @@ let selectedPrompt = 'wilde';
 
 bot.command('setprompt', (ctx) => {
   const userId = ctx.from.id;
-  if (userId !== YOUR_USER_ID) {
+  if (userId !== 760396488) {
     ctx.reply('Sorry, only the owner can change the prompt.');
     return;
   }
@@ -200,20 +200,5 @@ cron.schedule('0 0 * * *', cleanupDB, {
   timezone: 'Europe/Paris'
 });
 
-//Bot on chatid
-
-bot.command('chatid', (ctx) => {
-  const chatId = ctx.message.chat.id;
-  const chatType = ctx.message.chat.type;
-  
-  let chatTypeStr = 'Chat';
-  if (chatType === 'group') {
-    chatTypeStr = 'Group';
-  } else if (chatType === 'channel') {
-    chatTypeStr = 'Channel';
-  }
-
-  ctx.reply(`${chatTypeStr} ID: ${chatId}`);
-});
 
 bot.launch();
