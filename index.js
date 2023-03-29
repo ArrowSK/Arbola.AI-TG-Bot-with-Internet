@@ -95,8 +95,8 @@ const prompts = new Map([
 let selectedPrompt = 'wilde';
 
 bot.command('setprompt', (ctx) => {
-  const userId = ctx.from.id;
-  if (userId !== 760396488) {
+  const userId = Number(process.env.BOT_OWNER_USER_ID);
+  if (ctx.from.id !== userId) {
     ctx.reply('Sorry, only the owner can change the prompt.');
     return;
   }
