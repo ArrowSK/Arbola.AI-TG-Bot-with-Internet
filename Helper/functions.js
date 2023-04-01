@@ -14,10 +14,10 @@ const getChat = async (text, messages) => {
     const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [...messages, { role: "user", content: text }],
-      max_tokens: 650,
-      temperature: 0.3,
-      frequency_penalty: 0.2,
-      presence_penalty: 0.05,
+      max_tokens: 700,
+      temperature: 0.5,
+      frequency_penalty: 0.4,
+      presence_penalty: 0.2,
     });
 
     return response.data.choices[0].message.content;
