@@ -45,4 +45,4 @@ To run this bot, you'll need to have Node.js and npm installed. Then, follow the
   <li>bottleneck: Job scheduler and rate limiter.</li>
   <li>cheerio: A fast, flexible, and lean implementation of core jQuery for the server.</li>
 </ul>
-Based on the initial code from https://github.com/ChetanXpro
+Based on the initial code from https://github.com/ChetanXpro but greatly deviated form the original.
