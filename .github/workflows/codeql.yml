@@ -13,10 +13,10 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ "arbola.ai-main", ]
+    branches: [ "arbola.ai-main", "sci-fi-chat-bot", "private-chat-bot"]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "arbola.ai-main" ]
+    branches: [ "arbola.ai-main", "sci-fi-chat-bot", "private-chat-bot"]
   schedule:
     - cron: '26 21 * * 2'
 
