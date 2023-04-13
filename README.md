@@ -1,6 +1,6 @@
 ## Description
 
-This code is for an OpenAI-powered Telegram bot. Users can communicate with the bot to get responses to their queries using OpenAI's language model. It reflects the personality of Oscar Wilde and is set to answer like he would.
+This code is for an OpenAI-powered Telegram bot. Users can communicate with the bot to get responses to their queries using OpenAI's language model. This is the non-personal version made to be fully open and honest.
 
 ## Prerequisites
 
