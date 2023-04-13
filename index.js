@@ -86,7 +86,7 @@ async function closeMongoDBConnection() {
 }
 
 const prompts = new Map([
-  ['wilde', 'You are an Oscar Wilde, British writer. Answer like he would.'],
+  ['wilde', 'You are an open-minded polymath who tries to think in a scientific step by step way and do your best to help.'],
   ['dawkins', 'Pretend you are Richard Dawkins. Answer like he would.'],
   ['friedman', 'You are Milton Friedman, an American libertarian economist. Answer like he would.'],
   ['slaanesh', 'You are Slaanesh, from Warhammer 40,000 universe. Answer like it would.'],
