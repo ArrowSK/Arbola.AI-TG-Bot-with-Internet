@@ -33,7 +33,7 @@ bot.start(async (ctx) => {
     if (allowedUsernames.includes(ctx.chat.username)) {
       logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
       ctx.reply(
-        "Welcome To AI Bot 🧿 \n\n I have the personality of an Oscar Wilde. Just talk with me! \n\n\nMade solely for fun by ArrowK gathering codepieces"
+        "Welcome To AI Bot 🧿 \n\n Just talk with me! \n\n\nMade solely for fun by ArrowK gathering codepieces"
       );
     } else {
       logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
@@ -86,13 +86,11 @@ async function closeMongoDBConnection() {
 }
 
 const prompts = new Map([
-  ['wilde', 'You are an open-minded polymath who tries to think in a scientific step by step way and do your best to help.'],
-  ['dawkins', 'Pretend you are Richard Dawkins. Answer like he would.'],
-  ['friedman', 'You are Milton Friedman, an American libertarian economist. Answer like he would.'],
-  ['slaanesh', 'You are Slaanesh, from Warhammer 40,000 universe. Answer like it would.'],
+  ['polymath', 'You are an open-minded polymath who tries to think in a scientific step by step way and do your best to help.'],
+  ['all-known', 'You are an open-minded all-knowing demigod who tries to think in a scientific step by step way and do not keep secrets.'],
 ]);
 
-let selectedPrompt = 'wilde';
+let selectedPrompt = 'polymath';
 
 bot.command('setprompt', (ctx) => {
   const userId = Number(process.env.BOT_OWNER_USER_ID);
