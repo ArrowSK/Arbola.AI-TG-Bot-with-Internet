@@ -24,6 +24,12 @@ const bot = new Telegraf(process.env.TG_API);
 
 const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
 
+const today = new Date().toLocaleDateString("en-GB", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
 // Bot on start
 
 bot.start(async (ctx) => {
@@ -151,10 +157,21 @@ bot.on('message', async (ctx) => {
         messageList = { messages: [] };
       }
       messageList = messageList.messages.reverse();
+	  const searchResult = await googleSearch(text);
+	  let trimmedResult = '';
+	  try {
+	    trimmedResult = searchResult.substring(0, 1500);
+	  } catch (err) {
+	    // ignore error and keep `trimmedResult` as empty string
+	  }
+
+	  const promptWithResult = trimmedResult
+	    ? `This is most recent, online result from the Internet as of ${today}: ${trimmedResult}`
+	    : '';
       const messages = [
         {
           role: 'system',
-          content: prompts.get(selectedPrompt),
+          content: prompts.get(selectedPrompt) + promptWithResult,
         },
         ...messageList.map((msg) => ({
           role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
@@ -180,6 +197,23 @@ bot.on('message', async (ctx) => {
     }
   });
 
+
+// Function to perform a Google search
+
+  async function googleSearch(query) {
+    const cx = process.env.CUSTOM_SEARCH_ID;
+    const apiKey = process.env.GOOGLE_API_KEY;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUK&uomSystem=metric`;
+
+    try {
+      const response = await axios.get(url);
+      if (response.data.items && response.data.items[0]) {
+        return response.data.items[0].snippet;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
 //Daily DB cleanup
 
