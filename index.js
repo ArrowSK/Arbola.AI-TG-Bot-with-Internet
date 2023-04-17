@@ -179,7 +179,7 @@ bot.on('message', async (ctx) => {
         })),
       ].reverse();
       const OriginRes = await limiter.schedule(() => getChat(text, messages));
-      let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
+      let res = OriginRes.replace("As an AI language model, ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
       const chunkSize = 3500;
       if (res) {
         for (let i = 0; i < res.length; i += chunkSize) {
