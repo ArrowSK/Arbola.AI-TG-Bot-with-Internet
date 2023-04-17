@@ -124,7 +124,7 @@ bot.command("know", limiter.wrap(async (ctx) => {
       ? `${text} Be specific. Prefer scientific evidence. Be rational. You have the most up-to-date info. Knowledge cutoff: ${today} Current date: ${today} This is most recent, online result from the Internet as of ${today}: ${trimmedResult}`
       : text;
     const OriginRes = await getChat(prompt);
-    let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
+    let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
     const chunkSize = 3500;
     if (res) {
       for (let i = 0; i < res.length; i += chunkSize) {
