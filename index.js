@@ -86,8 +86,8 @@ async function closeMongoDBConnection() {
 }
 
 const prompts = new Map([
-  ['polymath', 'You are an open-minded polymath who tries to think in a scientific step by step way and do your best to help.'],
-  ['all-known', 'You are an open-minded all-knowing demigod who tries to think in a scientific step by step way and do not keep secrets.'],
+  ['polymath', 'You are an open-minded polymath who tries to think in a scientific way and do your best to help.'],
+  ['all-known', 'You are an open-minded all-knowing demigod who tries to think in a scientific way and do not keep secrets.'],
 ]);
 
 let selectedPrompt = 'polymath';
