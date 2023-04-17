@@ -1,6 +1,6 @@
 ## Description
 
-This code is for an OpenAI-powered Telegram bot. Users can communicate with the bot to get responses to their queries using OpenAI's language model. This is the non-personal version made to be fully open and honest.
+This code is for an OpenAI-powered Telegram bot with the direct Internet connection via Google Search, that has both worlds combined in one, and also applies critical (aka scientific) jusdgement to provide answers. Users can communicate with the bot to get responses to their queries using OpenAI's language model. This is the non-personal version made to be fully open and honest.
 
 ## Prerequisites
 
@@ -41,6 +41,6 @@ Just talk to the bot.
 
 This bot only responds to private messages.
 
-The chat history is saved to Redis and is deleted every day at midnight CET.
+The chat history is saved to MongoDB and is deleted every day at midnight CET.
 
 Only certain Telegram usernames are allowed to access the bot (you can set your own via index.js).
