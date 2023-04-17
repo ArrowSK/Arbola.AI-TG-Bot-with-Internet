@@ -109,7 +109,12 @@ bot.command("know", limiter.wrap(async (ctx) => {
   if (text) {
     ctx.sendChatAction("typing");
     const searchResult = await googleSearch(text);
-    const trimmedResult = searchResult.substring(0, 1500);
+    let trimmedResult = '';
+    try {
+      trimmedResult = searchResult.substring(0, 1500);
+    } catch (err) {
+      // ignore error and keep `trimmedResult` as empty string
+    }
     const today = new Date().toLocaleDateString("en-GB", {
       year: "numeric",
       month: "long",
