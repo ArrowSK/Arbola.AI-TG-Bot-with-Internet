@@ -43,4 +43,4 @@ This bot only responds to private messages.
 
 The chat history is saved to MongoDB and is deleted every day at midnight CET.
 
-Only certain Telegram usernames are allowed to access the bot (you can set your own via index.js).
+Only certain Telegram usernames are allowed to access the bot (you can set your own via ALLOWED_USERNAMES variable).
