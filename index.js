@@ -54,6 +54,24 @@ bot.help((ctx) => {
   );
 });
 
+const auto_usernames = process.env.AUTO_TELEGRAM_USERNAMES.split(","); // Get the usernames from .env file as a comma-separated string
+
+// Schedule the prompt to be sent at 13:49 CET each day to all usernames
+cron.schedule('49 13 * * *', async () => {
+  const prompt = "Ask me a random question";
+
+  for (const auto_username of auto_usernames) {
+    try {
+      const chat = await bot.telegram.getChat(auto_username);
+      const chatId = chat.id;
+      const response = await getChat(prompt, []);
+      await bot.telegram.sendMessage(chatId, response);
+    } catch (err) {
+      console.error(`Error sending prompt to username ${username}: ${err}`);
+    }
+  }
+});
+
 //Chat itself
 
 const limiter = new Bottleneck({
