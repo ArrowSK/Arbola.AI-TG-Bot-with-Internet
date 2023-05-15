@@ -197,30 +197,32 @@ bot.on('message', async (ctx) => {
         ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
         : '';
 
-      const messages = [
-        {
-          role: 'system',
-          content: prompts.get(selectedPrompt) + promptWithResult,
-        },
-        ...messageList.map((msg) => ({
-          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
-          content: msg.text,
-        })),
-        // Include the bot's answers in the message history
-        {
-          role: 'assistant',
-          content: res, // The bot's response
-        },
-      ].reverse();
-      const OriginRes = await limiter.schedule(() => getChat(text, messages));
-      let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
-      const chunkSize = 3500;
-      if (res) {
-        for (let i = 0; i < res.length; i += chunkSize) {
-          const messageChunk = res.substring(i, i + chunkSize);
-          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
-        }
-      }
+		const messages = [
+		  {
+		    role: 'system',
+		    content: prompts.get(selectedPrompt) + promptWithResult,
+		  },
+		  ...messageList.map((msg) => ({
+		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+		    content: msg.text,
+		  })),
+		];
+
+		const OriginRes = await limiter.schedule(() => getChat(text, messages));
+		let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
+
+		const chunkSize = 3500;
+		if (res) {
+		  messages.push({
+		    role: 'assistant',
+		    content: res, // The bot's response
+		  });
+
+		  for (let i = 0; i < res.length; i += chunkSize) {
+		    const messageChunk = res.substring(i, i + chunkSize);
+		    ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+		  }
+		}
 	  
 	  // Force the garbage collector to run
 	  
