@@ -114,28 +114,34 @@ bot.command('setprompt', (ctx) => {
 });
 
 bot.on('message', async (ctx) => {
-	if (ctx.chat.type === 'private') {
-	    const text = ctx.message.text?.trim().toLowerCase();
-	    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
+  if (ctx.chat.type === 'private') {
+    const text = ctx.message.text?.trim().toLowerCase();
+    logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
-	    // Check if user is authorized
-	    if (!allowedUsernames.includes(ctx.from.username)) {
-	      ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
-	      return;
-	    }
+    // Check if user is authorized
+    if (!allowedUsernames.includes(ctx.from.username)) {
+      ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
+      return;
+    }
+
     if (text && !text.startsWith('/')) {
       ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 15);
+
       await connectToMongoDB();
       const collection = mongoClient.db().collection('chat_history');
       const query = { chatId };
       const projection = { messages: { $slice: -messageCount } };
-      const update = { $push: { messages: {
-        text: ctx.message.text,
-        from: ctx.message.from,
-        message_id: ctx.message.message_id,
-      } } };
+      const update = {
+        $push: {
+          messages: {
+            text: ctx.message.text,
+            from: ctx.message.from,
+            message_id: ctx.message.message_id,
+          },
+        },
+      };
       const options = { returnOriginal: false, upsert: true };
       let messageList = null;
       let closed = false;
@@ -143,6 +149,7 @@ bot.on('message', async (ctx) => {
         closeMongoDBConnection();
         closed = true;
       }, 5 * 60 * 1000);
+
       try {
         messageList = await collection.findOneAndUpdate(query, update, options, projection);
       } catch (err) {
@@ -153,21 +160,25 @@ bot.on('message', async (ctx) => {
           closeMongoDBConnection();
         }
       }
+
       if (!messageList || !messageList.messages) {
         messageList = { messages: [] };
       }
-      messageList = messageList.messages.reverse();
-	  const searchResult = await googleSearch(text);
-	  let trimmedResult = '';
-	  try {
-	    trimmedResult = searchResult.substring(0, 1500);
-	  } catch (err) {
-	    // ignore error and keep `trimmedResult` as empty string
-	  }
 
-	  const promptWithResult = trimmedResult
-	    ? `This is most recent, online result from the Internet as of ${today}: ${trimmedResult}`
-	    : '';
+      messageList = messageList.messages.reverse();
+
+      const searchResult = await googleSearch(text);
+      let trimmedResult = '';
+      try {
+        trimmedResult = searchResult.substring(0, 1500);
+      } catch (err) {
+        // ignore error and keep `trimmedResult` as empty string
+      }
+
+      const promptWithResult = trimmedResult
+        ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
+        : '';
+
       const messages = [
         {
           role: 'system',
@@ -177,6 +188,11 @@ bot.on('message', async (ctx) => {
           role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
           content: msg.text,
         })),
+        // Include the bot's answers in the message history
+        {
+          role: 'assistant',
+          content: res, // The bot's response
+        },
       ].reverse();
       const OriginRes = await limiter.schedule(() => getChat(text, messages));
       let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
