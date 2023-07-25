@@ -17,7 +17,7 @@
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
     "mongodb": "^5.7.0",
-    "mongoose": "^7.4.0",
+    "mongoose": "^7.4.1",
     "node-cron": "^3.0.2",
     "node-postal": "^1.1.2",
     "openai": "^3.3.0",
