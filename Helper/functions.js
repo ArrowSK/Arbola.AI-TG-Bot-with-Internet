@@ -14,7 +14,7 @@ const getChat = async (text, messages) => {
     const response = await openai.createChatCompletion({
       model: "gpt-4",
       messages: [...messages, { role: "user", content: text }],
-      max_tokens: 900,
+      max_tokens: 750,
       temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
