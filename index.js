@@ -188,7 +188,7 @@ bot.on('message', async (ctx) => {
       const searchResult = await googleSearch(text);
       let trimmedResult = '';
       try {
-        trimmedResult = searchResult.substring(0, 3500);
+        trimmedResult = searchResult.substring(0, 2000);
       } catch (err) {
         // ignore error and keep `trimmedResult` as empty string
       }
