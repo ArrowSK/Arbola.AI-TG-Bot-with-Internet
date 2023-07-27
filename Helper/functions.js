@@ -12,9 +12,9 @@ const openai = new OpenAIApi(configuration);
 const getChat = async (text, messages) => {
   try {
     const response = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo-16k",
       messages: [...messages, { role: "user", content: text }],
-      max_tokens: 750,
+      max_tokens: 900,
       temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
