@@ -20,7 +20,7 @@
     "mongoose": "^7.4.5",
     "node-cron": "^3.0.2",
     "node-postal": "^1.1.2",
-    "openai": "^4.3.0",
+    "openai": "^3.3.0",
     "path": "^0.12.7",
     "pino": "^8.15.0",
     "pino-pretty": "^10.2.0",
