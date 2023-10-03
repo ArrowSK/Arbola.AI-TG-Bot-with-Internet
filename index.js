@@ -132,7 +132,7 @@ bot.on('message', async (ctx) => {
     if (text && !text.startsWith('/')) {
       ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
-      const messageCount = Math.min(ctx.message.message_id - 1, 10);
+      const messageCount = Math.min(ctx.message.message_id - 1, 0);
 
       await connectToMongoDB();
       const collection = mongoClient.db().collection('chat_history');
