@@ -3,9 +3,9 @@ const logger = require("./logger");
 
 
 
-const openai = new OpenAI({
-  apiKey: process.env.API,
-});
+//const openai = new OpenAI({
+//  apiKey: process.env.API,
+//});
 
 // Generate answer from prompt
 
