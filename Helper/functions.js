@@ -18,6 +18,7 @@ const getChat = async (text, messages) => {
       temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
+      stream: true,
     });
 
     return response.choices[0].message.content;
