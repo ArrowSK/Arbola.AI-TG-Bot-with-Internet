@@ -189,6 +189,10 @@ bot.on('message', async (ctx) => {
 		    role: 'system',
 		    content: prompts.get(selectedPrompt) + promptWithResult,
 		  },
+			{
+    role: 'user', // or 'assistant' depending on who you want to attribute the prompt to
+    content: promptWithResult, // Replace 'Your prompt here' with your actual prompt text
+  },
 		  ...messageList.map((msg) => ({
 		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
 		    content: msg.text,
