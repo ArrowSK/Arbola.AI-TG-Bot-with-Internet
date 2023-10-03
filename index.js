@@ -89,108 +89,107 @@ bot.on('message', async (ctx) => {
       const query = { chatId };
       const projection = { messages: { $slice: -messageCount } };
 
-      const messages = [];
-
       // Define OriginRes and res
       let OriginRes = '';
       let res = '';
 
       try {
+        const messages = []; // Define messages here
+
         OriginRes = await getChat(text, messages);
         res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
-      } catch (err) {
-        logger.error(err);
-      }
-
-      const update = {
-        $push: {
-          messages: [
-            {
-              text: ctx.message.text,
-              from: ctx.message.from,
-              message_id: ctx.message.message_id,
-              role: 'user',
-            },
-            {
-              text: res,
-              from: ctx.botInfo,
-              role: 'assistant',
-            },
-          ],
-        },
-      };
-      const options = { returnOriginal: false, upsert: true };
-      let messageList = null;
-      let closed = false;
-      const timeout = setTimeout(() => {
-        closeMongoDBConnection();
-        closed = true;
-      }, 5 * 60 * 1000);
-
-      try {
-        messageList = await collection.findOneAndUpdate(query, update, options, projection);
-      } catch (err) {
-        logger.error(err);
-      } finally {
-        clearTimeout(timeout);
-        if (!closed) {
+        
+        const update = {
+          $push: {
+            messages: [
+              {
+                text: ctx.message.text,
+                from: ctx.message.from,
+                message_id: ctx.message.message_id,
+                role: 'user',
+              },
+              {
+                text: res,
+                from: ctx.botInfo,
+                role: 'assistant',
+              },
+            ],
+          },
+        };
+        const options = { returnOriginal: false, upsert: true };
+        let messageList = null;
+        let closed = false;
+        const timeout = setTimeout(() => {
           closeMongoDBConnection();
+          closed = true;
+        }, 5 * 60 * 1000);
+
+        try {
+          messageList = await collection.findOneAndUpdate(query, update, options, projection);
+        } catch (err) {
+          logger.error(err);
+        } finally {
+          clearTimeout(timeout);
+          if (!closed) {
+            closeMongoDBConnection();
+          }
         }
-      }
 
-      if (!messageList || !messageList.messages) {
-        messageList = { messages: [] };
-      }
-
-      messageList = messageList.messages.reverse();
-
-      const searchResult = await googleSearch(text);
-      let trimmedResult = '';
-      try {
-        trimmedResult = searchResult.substring(0, 3000);
-      } catch (err) {
-        // ignore error and keep `trimmedResult` as an empty string
-      }
-
-      const promptWithResult = trimmedResult
-        ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
-        : '';
-
-      messages.push(
-        {
-          role: 'system',
-          content: prompts.get(selectedPrompt) + promptWithResult,
-        },
-        {
-          role: 'user',
-          content: text,
-        },
-        ...messageList.map((msg) => ({
-          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
-          content: msg.text,
-        })),
-        {
-          role: 'assistant',
-          content: res,
+        if (!messageList || !messageList.messages) {
+          messageList = { messages: [] };
         }
-      );
 
-      const chunkSize = 3500;
-      if (res) {
-        messages.push({
-          role: 'assistant',
-          content: res,
-        });
+        messageList = messageList.messages.reverse();
 
-        for (let i = 0; i < res.length; i += chunkSize) {
-          const messageChunk = res.substring(i, i + chunkSize);
-          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+        const searchResult = await googleSearch(text);
+        let trimmedResult = '';
+        try {
+          trimmedResult = searchResult.substring(0, 3000);
+        } catch (err) {
+          // ignore error and keep `trimmedResult` as an empty string
         }
+
+        const promptWithResult = trimmedResult
+          ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
+          : '';
+
+        const messagesToSend = [
+          {
+            role: 'system',
+            content: prompts.get(selectedPrompt) + promptWithResult,
+          },
+          {
+            role: 'user',
+            content: text,
+          },
+          ...messageList.map((msg) => ({
+            role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+            content: msg.text,
+          })),
+          {
+            role: 'assistant',
+            content: res,
+          },
+        ];
+
+        const chunkSize = 3500;
+        if (res) {
+          messagesToSend.push({
+            role: 'assistant',
+            content: res,
+          });
+
+          for (let i = 0; i < res.length; i += chunkSize) {
+            const messageChunk = res.substring(i, i + chunkSize);
+            ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+          }
+        }
+
+        res = null; // Clear res after sending
+
+      } catch (error) {
+        logger.error(error);
       }
-
-      // Force the garbage collector to run
-
-      res = null;
     } else {
       ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
