@@ -1,13 +1,12 @@
 require("dotenv").config();
 const OpenAI = require("openai");
 const { getChat } = require('./Helper/functions');
-const { Telegraf } = require("telegraf"); // Import Telegraf from the telegraf library
-const { MongoClient } = require('mongodb'); // Import MongoClient from the mongodb library
+const { Telegraf } = require("telegraf");
+const { MongoClient } = require('mongodb');
 
 const cron = require('node-cron');
-const axios = require("axios"); // Import axios for HTTP requests
+const axios = require("axios");
 const logger = require("./Helper/logger");
-const fs = require("fs");
 
 const openai = new OpenAI({
   apiKey: process.env.API,
@@ -19,58 +18,12 @@ const bot = new Telegraf(process.env.TG_API);
 const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
 
 const today = new Date().toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-// Bot on start
-
-bot.start(async (ctx) => {
-  if (ctx.chat.type === "group") {
-    logger.info(`Bot started In: ${ctx.chat.title} `);
-  } else if (ctx.chat.type === "private") {
-    if (allowedUsernames.includes(ctx.chat.username)) {
-      logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
-      ctx.reply(
-        "Welcome To AI Bot 🧿 \n\n Just talk with me! \n\n\nMade solely for fun by ArrowK gathering codepieces"
-      );
-    } else {
-      logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
-      ctx.reply("Sorry, you are not authorized to use this bot.");
-    }
-  }
+  year: "numeric",
+  month: "long",
+  day: "numeric",
 });
-
-bot.help((ctx) => {
-  ctx.reply(
-    "\nCommands - none actually, just chat. \n\n\nMade solely for fun by ArrowK gathering codepieces"
-  );
-});
-
-const auto_usernames = process.env.AUTO_TELEGRAM_USERNAMES.split(","); // Get the usernames from .env file as a comma-separated string
-
-// Schedule the prompt to be sent at 13:49 CET each day to all usernames
-cron.schedule('49 13 * * *', async () => {
-  const prompt = "Ask me a random question";
-
-  for (const auto_username of auto_usernames) {
-    try {
-      const chat = await bot.telegram.getChat(auto_username);
-      const chatId = chat.id;
-      const response = await getChat(prompt, []);
-      await bot.telegram.sendMessage(chatId, response);
-    } catch (err) {
-      console.error(`Error sending prompt to username ${username}: ${err}`);
-    }
-  }
-});
-
-//Chat itself
 
 let mongoClient = null;
-
-//MongoDB connection
 
 async function connectToMongoDB() {
   if (!mongoClient) {
@@ -81,8 +34,6 @@ async function connectToMongoDB() {
     }
   }
 }
-
-//MongoDB disconnection
 
 async function closeMongoDBConnection() {
   if (mongoClient) {
@@ -123,7 +74,6 @@ bot.on('message', async (ctx) => {
     const text = ctx.message.text?.trim().toLowerCase();
     logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
-    // Check if user is authorized
     if (!allowedUsernames.includes(ctx.from.username)) {
       ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
       return;
@@ -138,26 +88,37 @@ bot.on('message', async (ctx) => {
       const collection = mongoClient.db().collection('chat_history');
       const query = { chatId };
       const projection = { messages: { $slice: -messageCount } };
-	const OriginRes = await getChat(text, messages);
-    console.log('messages array before sending to getChat:', messages);
-	let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
-	  const update = {
-	    $push: {
-	      messages: [
-	        {
-	          text: ctx.message.text,
-	          from: ctx.message.from,
-	          message_id: ctx.message.message_id,
-	          role: 'user', // Add role information
-	        },
-	        {
-	          text: res, // Add the assistant's response
-	          from: ctx.botInfo, // Assuming ctx.botInfo contains assistant information
-	          role: 'assistant', // Add role information
-	        },
-	      ],
-	    },
-	  };
+
+      const messages = [];
+
+      // Define OriginRes and res
+      let OriginRes = '';
+      let res = '';
+
+      try {
+        OriginRes = await getChat(text, messages);
+        res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
+      } catch (err) {
+        logger.error(err);
+      }
+
+      const update = {
+        $push: {
+          messages: [
+            {
+              text: ctx.message.text,
+              from: ctx.message.from,
+              message_id: ctx.message.message_id,
+              role: 'user',
+            },
+            {
+              text: res,
+              from: ctx.botInfo,
+              role: 'assistant',
+            },
+          ],
+        },
+      };
       const options = { returnOriginal: false, upsert: true };
       let messageList = null;
       let closed = false;
@@ -188,72 +149,68 @@ bot.on('message', async (ctx) => {
       try {
         trimmedResult = searchResult.substring(0, 3000);
       } catch (err) {
-        // ignore error and keep `trimmedResult` as empty string
+        // ignore error and keep `trimmedResult` as an empty string
       }
 
       const promptWithResult = trimmedResult
         ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
         : '';
 
-		const messages = [
-		  {
-		    role: 'system',
-		    content: prompts.get(selectedPrompt) + promptWithResult,
-		  },
-			{
-    role: 'user', // or 'assistant' depending on who you want to attribute the prompt to
-    content: text, // Replace 'Your prompt here' with your actual prompt text
-  },
-		  ...messageList.map((msg) => ({
-		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
-		    content: msg.text,
-		  })),
-			,
-  {
-    role: 'assistant', // Add the assistant's role
-    content: res, // Add the assistant's response
-  },
-		];
+      messages.push(
+        {
+          role: 'system',
+          content: prompts.get(selectedPrompt) + promptWithResult,
+        },
+        {
+          role: 'user',
+          content: text,
+        },
+        ...messageList.map((msg) => ({
+          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+          content: msg.text,
+        })),
+        {
+          role: 'assistant',
+          content: res,
+        }
+      );
 
-		const chunkSize = 3500;
-		if (res) {
-		  messages.push({
-		    role: 'assistant',
-		    content: res, // The bot's response
-		  });
+      const chunkSize = 3500;
+      if (res) {
+        messages.push({
+          role: 'assistant',
+          content: res,
+        });
 
-		  for (let i = 0; i < res.length; i += chunkSize) {
-		    const messageChunk = res.substring(i, i + chunkSize);
-		    ctx.telegram.sendMessage(chatId, `${messageChunk}`);
-		  }
-		}
-	  
-	  // Force the garbage collector to run
-	  
-	  res = null;
-  } else {
-        ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
+        for (let i = 0; i < res.length; i += chunkSize) {
+          const messageChunk = res.substring(i, i + chunkSize);
+          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+        }
       }
-    }
-  });
 
+      // Force the garbage collector to run
 
-// Function to perform a Google search
-
-  async function googleSearch(query) {
-    const cx = process.env.CUSTOM_SEARCH_ID;
-    const apiKey = process.env.GOOGLE_API_KEY;
-    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUK&uomSystem=metric`;
-
-    try {
-      const response = await axios.get(url);
-      if (response.data.items && response.data.items[0]) {
-        return response.data.items[0].snippet;
-      }
-    } catch (error) {
-      console.error(error);
+      res = null;
+    } else {
+      ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
   }
+});
+
+async function googleSearch(query) {
+  const cx = process.env.CUSTOM_SEARCH_ID;
+  const apiKey = process.env.GOOGLE_API_KEY;
+  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUK&uomSystem=metric`;
+
+  try {
+    const response = await axios.get(url);
+    if (response.data.items && response.data.items[0]) {
+      return response.data.items[0].snippet;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 const { clearConversationHistory } = require('./Helper/functions');
 
@@ -261,7 +218,6 @@ bot.command('clearhistory', async (ctx) => {
   if (ctx.chat.type === 'private') {
     const chatId = ctx.message.chat.id;
 
-    // Attempt to clear the conversation history for the current chat
     const cleared = await clearConversationHistory(chatId);
 
     if (cleared) {
@@ -271,8 +227,6 @@ bot.command('clearhistory', async (ctx) => {
     }
   }
 });
-
-//Daily DB cleanup
 
 const uri = process.env.MONGODB_URI;
 const options = { useNewUrlParser: true, useUnifiedTopology: true };
@@ -291,10 +245,8 @@ const cleanupDB = async () => {
   }
 };
 
-// Schedule a task to run every day at midnight CET (Central European Time)
 cron.schedule('0 0 * * *', cleanupDB, {
   timezone: 'Europe/Paris'
 });
-
 
 bot.launch();
