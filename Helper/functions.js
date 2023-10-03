@@ -13,9 +13,9 @@ const getChat = async (text, messages) => {
   try {
     const response = await openai.chat.completions.create({
   model: "gpt-3.5-turbo-16k",
-      messages: [...messages],
+      messages: [...messages,(text,messages)],
       temperature: 0.3,
-  max_tokens: 200,
+  max_tokens: 900,
   top_p: 1,
   frequency_penalty: 0.2,
   presence_penalty: 0.05,
