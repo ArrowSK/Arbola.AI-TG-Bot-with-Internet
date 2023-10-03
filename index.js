@@ -243,6 +243,23 @@ bot.on('message', async (ctx) => {
     }
   }
 
+const { clearConversationHistory } = require('./Helper/functions');
+
+bot.command('clearhistory', async (ctx) => {
+  if (ctx.chat.type === 'private') {
+    const chatId = ctx.message.chat.id;
+
+    // Attempt to clear the conversation history for the current chat
+    const cleared = await clearConversationHistory(chatId);
+
+    if (cleared) {
+      ctx.reply('Conversation history cleared successfully.');
+    } else {
+      ctx.reply('No conversation history found to clear.');
+    }
+  }
+});
+
 //Daily DB cleanup
 
 const uri = process.env.MONGODB_URI;
