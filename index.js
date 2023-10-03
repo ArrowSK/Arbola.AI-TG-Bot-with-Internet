@@ -1,25 +1,20 @@
 require("dotenv").config();
-const { Configuration, OpenAIApi } = require("openai");
-const {
-  getImage,
-  getChat,
+const OpenAI = require("openai");
+const OpenAI = require("./Helper/functions");
 
-  correctEngish,
-} = require("./Helper/functions");
-
-	const { Telegraf } = require("telegraf");
-const { default: axios } = require("axios");
+	const OpenAI = require("telegraf");
+const OpenAI = require("axios");
 const logger = require("./Helper/logger");
 const fs = require("fs");
 const util = require("util");
 const Bottleneck = require("bottleneck");
-const { Markup } = require('telegraf');
+const OpenAI = require('telegraf');
 
-const configuration = new Configuration({
+
+
+const openai = new OpenAI({
   apiKey: process.env.API,
 });
-
-const openai = new OpenAIApi(configuration);
 module.exports = openai;
 
 const bot = new Telegraf(process.env.TG_API);
