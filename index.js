@@ -1,11 +1,13 @@
 require("dotenv").config();
 const OpenAI = require("openai");
 const { getChat } = require('./Helper/functions');
-const { Telegraf } = require("telegraf");
-const { MongoClient } = require('mongodb');
+const { Telegraf } = require("telegraf"); // Import Telegraf from the telegraf library
+const { MongoClient } = require('mongodb'); // Import MongoClient from the mongodb library
+
 const cron = require('node-cron');
-const axios = require("axios");
+const axios = require("axios"); // Import axios for HTTP requests
 const logger = require("./Helper/logger");
+const fs = require("fs");
 
 const openai = new OpenAI({
   apiKey: process.env.API,
@@ -13,29 +15,42 @@ const openai = new OpenAI({
 module.exports = openai;
 
 const bot = new Telegraf(process.env.TG_API);
+
 const allowedUsernames = process.env.ALLOWED_USERNAMES.split(',');
 
 const today = new Date().toLocaleDateString("en-GB", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+// Bot on start
 
 bot.start(async (ctx) => {
-  if (ctx.chat.type === "private" && allowedUsernames.includes(ctx.chat.username)) {
-    logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
-    ctx.reply("Welcome To AI Bot 🧿 \n\n Just talk with me! \n\n\nMade solely for fun by ArrowK gathering codepieces");
-  } else {
-    ctx.reply("Sorry, you are not authorized to use this bot.");
+  if (ctx.chat.type === "group") {
+    logger.info(`Bot started In: ${ctx.chat.title} `);
+  } else if (ctx.chat.type === "private") {
+    if (allowedUsernames.includes(ctx.chat.username)) {
+      logger.info(`Bot started By ${ctx.chat.username || ctx.chat.first_name}`);
+      ctx.reply(
+        "Welcome To AI Bot 🧿 \n\n Just talk with me! \n\n\nMade solely for fun by ArrowK gathering codepieces"
+      );
+    } else {
+      logger.info(`Access denied to ${ctx.chat.username || ctx.chat.first_name}`);
+      ctx.reply("Sorry, you are not authorized to use this bot.");
+    }
   }
 });
 
 bot.help((ctx) => {
-  ctx.reply("Commands - none actually, just chat. \n\n\nMade solely for fun by ArrowK gathering codepieces");
+  ctx.reply(
+    "\nCommands - none actually, just chat. \n\n\nMade solely for fun by ArrowK gathering codepieces"
+  );
 });
 
-const auto_usernames = process.env.AUTO_TELEGRAM_USERNAMES.split(",");
+const auto_usernames = process.env.AUTO_TELEGRAM_USERNAMES.split(","); // Get the usernames from .env file as a comma-separated string
 
+// Schedule the prompt to be sent at 13:49 CET each day to all usernames
 cron.schedule('49 13 * * *', async () => {
   const prompt = "Ask me a random question";
 
@@ -51,7 +66,11 @@ cron.schedule('49 13 * * *', async () => {
   }
 });
 
+//Chat itself
+
 let mongoClient = null;
+
+//MongoDB connection
 
 async function connectToMongoDB() {
   if (!mongoClient) {
@@ -62,6 +81,8 @@ async function connectToMongoDB() {
     }
   }
 }
+
+//MongoDB disconnection
 
 async function closeMongoDBConnection() {
   if (mongoClient) {
@@ -102,6 +123,7 @@ bot.on('message', async (ctx) => {
     const text = ctx.message.text?.trim().toLowerCase();
     logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
+    // Check if user is authorized
     if (!allowedUsernames.includes(ctx.from.username)) {
       ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
       return;
@@ -155,66 +177,73 @@ bot.on('message', async (ctx) => {
       try {
         trimmedResult = searchResult.substring(0, 3000);
       } catch (err) {
-        // ignore error and keep `trimmedResult` as an empty string
+        // ignore error and keep `trimmedResult` as empty string
       }
 
       const promptWithResult = trimmedResult
         ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
         : '';
 
-      const messages = [
-        {
-          role: 'system',
-          content: prompts.get(selectedPrompt) + promptWithResult,
-        },
-        ...messageList.map((msg) => ({
-          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
-          content: msg.text,
-        })),
-      ];
+		const messages = [
+		  {
+		    role: 'system',
+		    content: prompts.get(selectedPrompt) + promptWithResult,
+		  },
+		  ...messageList.map((msg) => ({
+		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+		    content: msg.text,
+		  })),
+		];
 
-      const OriginRes = await getChat(text, messages);
-      let res = OriginRes.replace(/(I'm sorry, |as an AI language model, |I don't have |I do not have )/g, "");
-      const chunkSize = 3500;
+		const OriginRes = await getChat(text, messages);
+		let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
 
-      if (res) {
-        messages.push({
-          role: 'assistant',
-          content: res,
-        });
+		const chunkSize = 3500;
+		if (res) {
+		  messages.push({
+		    role: 'assistant',
+		    content: res, // The bot's response
+		  });
 
-        for (let i = 0; i < res.length; i += chunkSize) {
-          const messageChunk = res.substring(i, i + chunkSize);
-          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
-        }
+		  for (let i = 0; i < res.length; i += chunkSize) {
+		    const messageChunk = res.substring(i, i + chunkSize);
+		    ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+		  }
+		}
+	  
+	  // Force the garbage collector to run
+	  
+	  res = null;
+  } else {
+        ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
       }
+    }
+  });
 
-      res = null;
-    } else {
-      ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
+
+// Function to perform a Google search
+
+  async function googleSearch(query) {
+    const cx = process.env.CUSTOM_SEARCH_ID;
+    const apiKey = process.env.GOOGLE_API_KEY;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUK&uomSystem=metric`;
+
+    try {
+      const response = await axios.get(url);
+      if (response.data.items && response.data.items[0]) {
+        return response.data.items[0].snippet;
+      }
+    } catch (error) {
+      console.error(error);
     }
   }
-});
 
-async function googleSearch(query) {
-  const cx = process.env.CUSTOM_SEARCH_ID;
-  const apiKey = process.env.GOOGLE_API_KEY;
-  const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${query}&num=1&cr=countryUK&uomSystem=metric`;
-
-  try {
-    const response = await axios.get(url);
-    if (response.data.items && response.data.items[0]) {
-      return response.data.items[0].snippet;
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
+//Daily DB cleanup
 
 const uri = process.env.MONGODB_URI;
 const options = { useNewUrlParser: true, useUnifiedTopology: true };
 
-async function cleanupDB() {
+const cleanupDB = async () => {
   const client = await MongoClient.connect(uri, options);
   try {
     const db = client.db();
@@ -226,10 +255,12 @@ async function cleanupDB() {
   } finally {
     client.close();
   }
-}
+};
 
+// Schedule a task to run every day at midnight CET (Central European Time)
 cron.schedule('0 0 * * *', cleanupDB, {
   timezone: 'Europe/Paris'
 });
+
 
 bot.launch();
