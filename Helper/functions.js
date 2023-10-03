@@ -1,6 +1,6 @@
 const OpenAI = require("openai");
 const logger = require("./logger");
-
+const { MongoClient } = require('mongodb');
 
 
 const openai = new OpenAI({
@@ -47,5 +47,46 @@ async function googleSearch(query) {
   }
 }
 
+// MongoDB connection URI from your .env file
+const mongoURI = process.env.MONGODB_URI;
 
-module.exports = { openai, getChat, googleSearch };
+async function clearConversationHistory(chatId) {
+  let client;
+
+  try {
+    // Connect to MongoDB
+    client = await MongoClient.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    // Get a reference to the database
+    const db = client.db();
+
+    // Define the collection where conversation history is stored
+    const collection = db.collection('chat_history');
+
+    // Define the query to find the conversation history for a specific chatId
+    const query = { chatId };
+
+    // Delete the conversation history for the specified chatId
+    const result = await collection.deleteMany(query);
+
+    if (result.deletedCount > 0) {
+      logger.info(`Deleted ${result.deletedCount} messages for chatId ${chatId}`);
+      return true; // Successfully cleared conversation history
+    } else {
+      logger.info(`No messages found for chatId ${chatId}`);
+      return false; // No messages found for the specified chatId
+    }
+  } catch (error) {
+    logger.error(`Error clearing conversation history: ${error}`);
+    return false; // An error occurred while clearing conversation history
+  } finally {
+    if (client) {
+      client.close();
+    }
+  }
+}
+
+module.exports = { clearConversationHistory, openai, getChat, googleSearch };
