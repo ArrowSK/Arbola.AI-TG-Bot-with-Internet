@@ -138,15 +138,21 @@ bot.on('message', async (ctx) => {
       const collection = mongoClient.db().collection('chat_history');
       const query = { chatId };
       const projection = { messages: { $slice: -messageCount } };
-      const update = {
-        $push: {
-          messages: {
-            text: ctx.message.text,
-            from: ctx.message.from,
-            message_id: ctx.message.message_id,
-          },
-        },
-      };
+const update = {
+  $push: {
+    messages: {
+      text: ctx.message.text,
+      from: ctx.message.from,
+      message_id: ctx.message.message_id,
+      role: 'user', // Add role information
+    },
+    {
+      text: res, // Add the assistant's response
+      from: ctx.botInfo, // Assuming ctx.botInfo contains assistant information
+      role: 'assistant', // Add role information
+    },
+  },
+};
       const options = { returnOriginal: false, upsert: true };
       let messageList = null;
       let closed = false;
@@ -197,6 +203,11 @@ bot.on('message', async (ctx) => {
 		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
 		    content: msg.text,
 		  })),
+			,
+  {
+    role: 'assistant', // Add the assistant's role
+    content: res, // Add the assistant's response
+  },
 		];
 
 		const OriginRes = await getChat(text, messages);
