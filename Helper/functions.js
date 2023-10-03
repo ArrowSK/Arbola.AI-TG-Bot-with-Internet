@@ -12,26 +12,19 @@ const openai = new OpenAI({
 const getChat = async (text, messages) => {
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo-16k",
+  model: "gpt-3.5-turbo-16k",
       messages: [...messages],
-      stream: true,
-      max_tokens: 200,
       temperature: 0.3,
-      frequency_penalty: 0.2,
-      presence_penalty: 0.05,
+  max_tokens: 200,
+  top_p: 1,
+  frequency_penalty: 0.2,
+  presence_penalty: 0.05,
     });
     
- let OriginRes = '';
-
-    for (let i = 0; i < response.choices.length; i++) {
-      OriginRes += response.choices[i].delta.content;
-    }
-
-    return OriginRes; // Return the concatenated response
+    return response.choices[0].message.content;
   } catch (error) {
-    console.error(error);
+    console.log(error);
     logger.error("Error while generating Answer");
-    return ''; // Return an empty string in case of an error
   }
 };
 
