@@ -9,7 +9,7 @@ const openai = new OpenAI({
 
 // Generate answer from prompt
 
-async function getChat (text, messages) {
+const getChat = async (text, messages) => {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-16k",
