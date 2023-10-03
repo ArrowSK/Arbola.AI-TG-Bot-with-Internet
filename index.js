@@ -170,7 +170,7 @@ bot.on('message', async (ctx) => {
         messageList = { messages: [] };
       }
 
-      messageList = messageList.messages();
+      messageList = messageList.messages;
 
       const searchResult = await googleSearch(text);
       let trimmedResult = '';
