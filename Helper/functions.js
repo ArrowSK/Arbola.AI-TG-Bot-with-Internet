@@ -9,23 +9,39 @@ const openai = new OpenAIApi(configuration);
 
 // Generate answer from prompt
 
-const getChat = async (text, messages) => {
+async function getChat(text, messages) {
   try {
-    const response = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo-16k",
-      messages: [...messages, { role: "user", content: text }],
-      max_tokens: 900,
+    const completion = await openai.chat.create({
+      model: 'gpt-3.5-turbo',
+		messages: [
+		  {
+		    role: 'system',
+		    content: prompts.get(selectedPrompt) + promptWithResult,
+		  },
+		  ...messageList.map((msg) => ({
+		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+		    content: msg.text,
+		  })),
+		];
+      stream: true,
+      max_tokens: 700,
       temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
     });
 
-    return response.data.choices[0].message.content;
+    let response = '';
+
+    for await (const chunk of completion) {
+      response += chunk.choices[0].message.content;
+    }
+
+    return response;
   } catch (error) {
-    console.log(error);
-    logger.error("Error while generating Answer");
+    console.error(error);
+    // Handle the error or log it as needed
   }
-};
+}
 
 // Function to perform a Google search
 
