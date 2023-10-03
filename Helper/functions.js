@@ -23,7 +23,7 @@ const getChat = async (text, messages) => {
     
   for await (const chunk of completion) {
     console.log(chunk.choices[0].delta.content);
-    
+  }
   } catch (error) {
     console.log(error);
     logger.error("Error while generating Answer");
