@@ -6,6 +6,7 @@ This code is for an OpenAI-powered Telegram bot with the direct Internet connect
 
 - Node.js
 - Mongodb
+- OpenAI
 
 ## Installation
 
