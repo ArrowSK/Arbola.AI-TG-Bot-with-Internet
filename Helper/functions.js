@@ -14,14 +14,16 @@ const getChat = async (text, messages) => {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-16k",
       messages: [...messages],
+      tream: true,
       max_tokens: 900,
       temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
-      stream: true,
     });
-
-    return response.choices[0].message.content;
+    
+  for await (const chunk of completion) {
+    console.log(chunk.choices[0].delta.content);
+    
   } catch (error) {
     console.log(error);
     logger.error("Error while generating Answer");
