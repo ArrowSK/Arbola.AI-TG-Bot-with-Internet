@@ -132,7 +132,7 @@ bot.on('message', async (ctx) => {
     if (text && !text.startsWith('/')) {
       ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
-      const messageCount = Math.min(ctx.message.message_id - 1, 15);
+      const messageCount = Math.min(ctx.message.message_id - 1, 10);
 
       await connectToMongoDB();
       const collection = mongoClient.db().collection('chat_history');
@@ -191,7 +191,7 @@ bot.on('message', async (ctx) => {
 		  },
 			{
     role: 'user', // or 'assistant' depending on who you want to attribute the prompt to
-    content: text && promptWithResult, // Replace 'Your prompt here' with your actual prompt text
+    content: text, // Replace 'Your prompt here' with your actual prompt text
   },
 		  ...messageList.map((msg) => ({
 		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
