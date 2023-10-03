@@ -1,15 +1,12 @@
 require("dotenv").config();
 const OpenAI = require("openai");
-const OpenAI = require("./Helper/functions");
-const OpenAI = require("telegraf");
-const OpenAI = require("axios");
-const logger = require("./Helper/logger");
+const { Telegraf } = require("telegraf"); // Import Telegraf from the telegraf library
+const { MongoClient } = require('mongodb'); // Import MongoClient from the mongodb library
 const Bottleneck = require("bottleneck");
-const OpenAI = require('mongodb');
 const cron = require('node-cron');
+const axios = require("axios"); // Import axios for HTTP requests
+const logger = require("./Helper/logger");
 const fs = require("fs");
-
-
 
 const openai = new OpenAI({
   apiKey: process.env.API,
