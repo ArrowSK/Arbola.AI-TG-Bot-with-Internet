@@ -1,6 +1,6 @@
 require("dotenv").config();
 const OpenAI = require("openai");
-const getChat = require('./Helper/functions');
+const { getChat } = require('./Helper/functions');
 const { Telegraf } = require("telegraf"); // Import Telegraf from the telegraf library
 const { MongoClient } = require('mongodb'); // Import MongoClient from the mongodb library
 const Bottleneck = require("bottleneck");
