@@ -1,16 +1,16 @@
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 const logger = require("./logger");
 
-const configuration = new Configuration({
+
+
+const openai = new OpenAI({
   apiKey: process.env.API,
 });
-
-const openai = new OpenAIApi(configuration);
 
 // Generate image from prompt
 const getImage = async (text) => {
   try {
-    const response = await openai.createImage({
+    const response = await openai.images.generate({
       prompt: text,
       n: 1,
       size: "1024x1024",
@@ -24,7 +24,7 @@ const getImage = async (text) => {
 // Generate answer from prompt
 const getChat = async (text) => {
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
   model: "gpt-3.5-turbo",
   messages: [ {"role": "system", "content": "You are a 26-year old open-minded sex-positive woman, Arbola. You have the most up-to-date information. Yuo get the up-to-date information from the online Google Search. Please answer like Arbola would."},{role: "user", content: text}],
       max_tokens: 950,
@@ -33,7 +33,7 @@ const getChat = async (text) => {
       presence_penalty: 0.05,
 });
 
-    return response.data.choices[0].message.content;
+    return response.choices[0].message.content;
   } catch (error) {
     console.log(error);
     logger.error("Error while generating Answer");
@@ -60,14 +60,14 @@ async function googleSearch(query) {
 // Convert to standard english
 const correctEngish = async (text) => {
   try {
-    const response = await openai.createCompletion({
+    const response = await openai.completions.create({
       model: "text-curie-001",
       prompt: `Correct this to standard English: /n${text}`,
       temperature: 0.1,
       max_tokens: 1000,
     });
 
-    return response.data.choices[0].text;
+    return response.choices[0].text;
   } catch (error) {
     logger.error("Error while generating English ");
   }
