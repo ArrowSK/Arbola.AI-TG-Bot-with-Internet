@@ -48,6 +48,23 @@ bot.help((ctx) => {
   );
 });
 
+const { clearConversationHistory } = require('./Helper/functions');
+
+bot.command('clearhistory', async (ctx) => {
+  if (ctx.chat.type === 'private') {
+    const chatId = ctx.message.chat.id;
+
+    // Attempt to clear the conversation history for the current chat
+    const cleared = await clearConversationHistory(chatId);
+
+    if (cleared) {
+      ctx.reply('Conversation history cleared successfully.');
+    } else {
+      ctx.reply('No conversation history found to clear.');
+    }
+  }
+});
+
 const auto_usernames = process.env.AUTO_TELEGRAM_USERNAMES.split(","); // Get the usernames from .env file as a comma-separated string
 
 // Schedule the prompt to be sent at 13:49 CET each day to all usernames
@@ -242,23 +259,6 @@ bot.on('message', async (ctx) => {
       console.error(error);
     }
   }
-
-const { clearConversationHistory } = require('./Helper/functions');
-
-bot.command('clearhistory', async (ctx) => {
-  if (ctx.chat.type === 'private') {
-    const chatId = ctx.message.chat.id;
-
-    // Attempt to clear the conversation history for the current chat
-    const cleared = await clearConversationHistory(chatId);
-
-    if (cleared) {
-      ctx.reply('Conversation history cleared successfully.');
-    } else {
-      ctx.reply('No conversation history found to clear.');
-    }
-  }
-});
 
 //Daily DB cleanup
 
