@@ -15,18 +15,23 @@ const getChat = async (text, messages) => {
       model: "gpt-3.5-turbo-16k",
       messages: [...messages],
       stream: true,
-      max_tokens: 900,
+      max_tokens: 200,
       temperature: 0.3,
       frequency_penalty: 0.2,
       presence_penalty: 0.05,
     });
     
-  for await (const chunk of completion) {
-    console.log(chunk.choices[0].delta.content);
-  }
+let OriginRes = '';
+
+    for (const chunk of response.choices) {
+      OriginRes += chunk.delta.content;
+    }
+
+    return OriginRes; // Return the concatenated response
   } catch (error) {
-    console.log(error);
+    console.error(error);
     logger.error("Error while generating Answer");
+    return ''; // Return an empty string in case of an error
   }
 };
 
