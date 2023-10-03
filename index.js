@@ -3,7 +3,7 @@ const OpenAI = require("openai");
 const { getChat } = require('./Helper/functions');
 const { Telegraf } = require("telegraf"); // Import Telegraf from the telegraf library
 const { MongoClient } = require('mongodb'); // Import MongoClient from the mongodb library
-const Bottleneck = require("bottleneck");
+
 const cron = require('node-cron');
 const axios = require("axios"); // Import axios for HTTP requests
 const logger = require("./Helper/logger");
@@ -67,13 +67,6 @@ cron.schedule('49 13 * * *', async () => {
 });
 
 //Chat itself
-
-const limiter = new Bottleneck({
-  reservoir: 5,
-  reservoirRefreshAmount: 5,
-  reservoirRefreshInterval: 60 * 1000,
-  maxConcurrent: 1,
-});
 
 let mongoClient = null;
 
@@ -202,7 +195,7 @@ bot.on('message', async (ctx) => {
 		  })),
 		];
 
-		const OriginRes = await limiter.schedule(() => getChat(text, messages));
+		const OriginRes = await getChat(text, messages);
 		let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
 
 		const chunkSize = 3500;
