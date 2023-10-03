@@ -21,10 +21,10 @@ const getChat = async (text, messages) => {
       presence_penalty: 0.05,
     });
     
-let OriginRes = '';
+ let OriginRes = '';
 
-    for (const chunk of response.choices[0].message.content) {
-      OriginRes += chunk;
+    for (let i = 0; i < response.choices.length; i++) {
+      OriginRes += response.choices[i].delta.content;
     }
 
     return OriginRes; // Return the concatenated response
