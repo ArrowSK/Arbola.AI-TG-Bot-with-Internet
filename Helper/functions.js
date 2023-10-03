@@ -23,8 +23,8 @@ const getChat = async (text, messages) => {
     
 let OriginRes = '';
 
-    for (const chunk of response.choices) {
-      OriginRes += chunk.delta.content;
+    for (const chunk of response.choices[0].message.content) {
+      OriginRes += chunk;
     }
 
     return OriginRes; // Return the concatenated response
