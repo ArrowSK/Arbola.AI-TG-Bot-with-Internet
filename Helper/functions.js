@@ -1,17 +1,17 @@
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 const logger = require("./logger");
 
-const configuration = new Configuration({
+
+
+const openai = new OpenAI({
   apiKey: process.env.API,
 });
-
-const openai = new OpenAIApi(configuration);
 
 // Generate answer from prompt
 
 const getChat = async (text, messages) => {
   try {
-    const response = await openai.createChatCompletion({
+    const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo-16k",
       messages: [...messages, { role: "user", content: text }],
       max_tokens: 900,
@@ -20,7 +20,7 @@ const getChat = async (text, messages) => {
       presence_penalty: 0.05,
     });
 
-    return response.data.choices[0].message.content;
+    return response.choices[0].message.content;
   } catch (error) {
     console.log(error);
     logger.error("Error while generating Answer");
