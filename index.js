@@ -138,6 +138,9 @@ bot.on('message', async (ctx) => {
       const collection = mongoClient.db().collection('chat_history');
       const query = { chatId };
       const projection = { messages: { $slice: -messageCount } };
+	const OriginRes = await getChat(text, messages);
+    console.log('messages array before sending to getChat:', messages);
+	let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
 	  const update = {
 	    $push: {
 	      messages: [
@@ -191,10 +194,6 @@ bot.on('message', async (ctx) => {
       const promptWithResult = trimmedResult
         ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
         : '';
-
-		const OriginRes = await getChat(text, messages);
-	    console.log('messages array before sending to getChat:', messages);
-		let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
 
 		const messages = [
 		  {
