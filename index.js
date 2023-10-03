@@ -125,19 +125,19 @@ bot.command('setprompt', (ctx) => {
   ctx.reply(`Prompt set to: ${prompts.get(promptName)}`);
 });
 
-bot.on('text', async (ctx) => {
+bot.on('message', async (ctx) => {
   if (ctx.chat.type === 'private') {
     const text = ctx.message.text?.trim().toLowerCase();
     logger.info(`Chat: ${ctx.from.username || ctx.from.first_name}: ${text}`);
 
-    // Check if the user is authorized
+    // Check if user is authorized
     if (!allowedUsernames.includes(ctx.from.username)) {
       ctx.telegram.sendMessage(ctx.message.chat.id, "You are not authorized to use this bot.");
       return;
     }
 
     if (text && !text.startsWith('/')) {
-      ctx.telegram.sendChatAction(ctx.message.chat.id, 'typing');
+      ctx.sendChatAction('typing');
       const chatId = ctx.message.chat.id;
       const messageCount = Math.min(ctx.message.message_id - 1, 15);
 
@@ -184,39 +184,39 @@ bot.on('text', async (ctx) => {
       try {
         trimmedResult = searchResult.substring(0, 3000);
       } catch (err) {
-        // ignore error and keep `trimmedResult` as an empty string
+        // ignore error and keep `trimmedResult` as empty string
       }
 
       const promptWithResult = trimmedResult
         ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
         : '';
 
-      const messages = [
-        {
-          role: 'system',
-          content: prompts.get(selectedPrompt) + promptWithResult,
-        },
-        ...messageList.map((msg) => ({
-          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
-          content: msg.text,
-        })),
-      ];
+		const messages = [
+		  {
+		    role: 'system',
+		    content: prompts.get(selectedPrompt) + promptWithResult,
+		  },
+		  ...messageList.map((msg) => ({
+		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+		    content: msg.text,
+		  })),
+		];
 
-      const OriginRes = await limiter.schedule(() => getChat(text, messages));
-      let res = OriginRes.choices[0].message.content.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
+		const OriginRes = await limiter.schedule(() => getChat(text, messages));
+		let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
 
-      const chunkSize = 3500;
-      if (res) {
-        messages.push({
-          role: 'assistant',
-          content: res, // The bot's response
-        });
+		const chunkSize = 3500;
+		if (res) {
+		  messages.push({
+		    role: 'assistant',
+		    content: res, // The bot's response
+		  });
 
-        for (let i = 0; i < res.length; i += chunkSize) {
-          const messageChunk = res.substring(i, i + chunkSize);
-          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
-        }
-      }
+		  for (let i = 0; i < res.length; i += chunkSize) {
+		    const messageChunk = res.substring(i, i + chunkSize);
+		    ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+		  }
+		}
 	  
 	  // Force the garbage collector to run
 	  
