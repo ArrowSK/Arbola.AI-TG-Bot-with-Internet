@@ -232,6 +232,59 @@ bot.on('message', async (ctx) => {
 		    ctx.telegram.sendMessage(chatId, `${messageChunk}`);
 		  }
 		}
+	  // Res to MongoDB
+		
+		// Create an object representing the assistant's message
+		const assistantMessage = {
+		  text: res, // The assistant's response text
+		  from: { id: 'assistant' }, // Indicating the role of the sender as 'assistant'
+		  message_id: ctx.message.message_id + 1, // Generate a unique message ID
+		};
+
+		let mongoClient = null;
+
+		async function updateChatHistory() {
+		  try {
+		    // Connect to MongoDB if not already connected
+		    if (!mongoClient) {
+		      mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+		    }
+
+		    // Get the 'chat_history' collection
+		    const collection = mongoClient.db().collection('chat_history');
+
+		    // Update the 'chat_history' document for the specific chat
+		    const updateResult = await collection.updateOne(
+		      { chatId },
+		      {
+		        $push: {
+		          messages: assistantMessage, // Add the assistant's message to the 'messages' array
+		        },
+		      }
+		    );
+
+		    // Check the update result if needed
+		    if (updateResult.modifiedCount === 1) {
+		      // The document was updated successfully
+		    } else {
+		      // The document was not updated (perhaps the chatId was not found)
+		    }
+		  } catch (error) {
+		    // Handle any errors that occur during database operations
+		    console.error(error);
+		  } finally {
+		    // Close the MongoDB connection
+		    if (mongoClient) {
+		      await mongoClient.close();
+		      mongoClient = null;
+		    }
+		  }
+		}
+
+		// Call the function to update the chat history
+		updateChatHistory();
+	
+	  
 	  
 	  // Force the garbage collector to run
 	  
