@@ -194,106 +194,64 @@ bot.on('message', async (ctx) => {
       try {
         trimmedResult = searchResult.substring(0, 3000);
       } catch (err) {
-        // ignore error and keep `trimmedResult` as empty string
+        // ignore error and keep `trimmedResult` as an empty string
       }
 
       const promptWithResult = trimmedResult
         ? `This is the most recent online result from the Internet as of ${today}: ${trimmedResult}`
         : '';
 
-		const messages = [
-		  {
-		    role: 'system',
-		    content: prompts.get(selectedPrompt) + promptWithResult,
-		  },
-			{
-    role: 'user', // or 'assistant' depending on who you want to attribute the prompt to
-    content: text, // Replace 'Your prompt here' with your actual prompt text
-  },
-		  ...messageList.map((msg) => ({
-		    role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
-		    content: msg.text,
-		  })),
-		];
+      const messages = [
+        {
+          role: 'system',
+          content: prompts.get(selectedPrompt) + promptWithResult,
+        },
+        {
+          role: 'user', // or 'assistant' depending on who you want to attribute the prompt to
+          content: text, // Replace 'Your prompt here' with your actual prompt text
+        },
+        ...messageList.map((msg) => ({
+          role: msg.from.id === ctx.botInfo.id ? 'assistant' : 'user',
+          content: msg.text,
+        })),
+      ];
 
-		const OriginRes = await getChat(text, messages);
-	    console.log('messages array before sending to getChat:', messages);
-		let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
+      const OriginRes = await getChat(text, messages);
+      console.log('messages array before sending to getChat:', messages);
+      let res = OriginRes.replace("As an AI language model, ", "").replace("I'm sorry, I cannot provide real-time information as I am an AI language model and do not have access to live data.", "").replace("I'm sorry, but I don't have access to real-time data. However, ", "").replace("I'm sorry, but I don't have access to real-time data.", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data. However, ", "").replace("I'm sorry, I cannot provide real-time information as my responses are based on pre-existing data.", "").replace("I'm sorry, but , ", "").replace("as an AI language model, ", "").replace("I'm sorry, as an AI language model,", "").replace("I don't have real-time access to", "").replace("I do not have real-time access to", "");
 
-		const chunkSize = 3500;
-		if (res) {
-		  messages.push({
-		    role: 'assistant',
-		    content: res, // The bot's response
-		  });
+      const chunkSize = 3500;
+      if (res) {
+        messages.push({
+          role: 'assistant',
+          content: res, // The bot's response
+        });
 
-		  for (let i = 0; i < res.length; i += chunkSize) {
-		    const messageChunk = res.substring(i, i + chunkSize);
-		    ctx.telegram.sendMessage(chatId, `${messageChunk}`);
-		  }
-		}
-	  // Res to MongoDB
-		
-		// Create an object representing the assistant's message
-		const assistantMessage = {
-		  text: res, // The assistant's response text
-		  from: { id: 'assistant' }, // Indicating the role of the sender as 'assistant'
-		  message_id: ctx.message.message_id + 1, // Generate a unique message ID
-		};
-
-		let mongoClient = null;
-
-		async function updateChatHistory() {
-		  try {
-		    // Connect to MongoDB if not already connected
-		    if (!mongoClient) {
-		      mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
-		    }
-
-		    // Get the 'chat_history' collection
-		    const collection = mongoClient.db().collection('chat_history');
-
-		    // Update the 'chat_history' document for the specific chat
-		    const updateResult = await collection.updateOne(
-		      { chatId },
-		      {
-		        $push: {
-		          messages: assistantMessage, // Add the assistant's message to the 'messages' array
-		        },
-		      }
-		    );
-
-		    // Check the update result if needed
-		    if (updateResult.modifiedCount === 1) {
-		      // The document was updated successfully
-		    } else {
-		      // The document was not updated (perhaps the chatId was not found)
-		    }
-		  } catch (error) {
-		    // Handle any errors that occur during database operations
-		    console.error(error);
-		  } finally {
-		    // Close the MongoDB connection
-		    if (mongoClient) {
-		      await mongoClient.close();
-		      mongoClient = null;
-		    }
-		  }
-		}
-
-		// Call the function to update the chat history
-		updateChatHistory();
-	
-	  
-	  
-	  // Force the garbage collector to run
-	  
-	  res = null;
-  } else {
-        ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
+        for (let i = 0; i < res.length; i += chunkSize) {
+          const messageChunk = res.substring(i, i + chunkSize);
+          ctx.telegram.sendMessage(chatId, `${messageChunk}`);
+        }
       }
+      // Res to MongoDB
+
+      // Create an object representing the assistant's message
+      const assistantMessage = {
+        text: res, // The assistant's response text
+        from: { id: 'assistant' }, // Indicating the role of the sender as 'assistant'
+        message_id: ctx.message.message_id + 1, // Generate a unique message ID
+      };
+
+      // Call the function to update the chat history
+      updateChatHistory(assistantMessage);
+
+      // Force the garbage collector to run
+
+      res = null;
+    } else {
+      ctx.telegram.sendMessage(ctx.message.chat.id, "Please send me a message to start a conversation.");
     }
-  });
+  }
+});
 
 
 // Function to perform a Google search
