@@ -121,6 +121,7 @@ async function updateChatHistory() {
     if (!mongoClient) {
       mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
     }
+}
 
 const prompts = new Map([
   ['polymath', process.env.PROMPT_POLYMATH],
