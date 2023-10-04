@@ -113,6 +113,15 @@ async function closeMongoDBConnection() {
   }
 }
 
+//MongoDB update chat history
+
+async function updateChatHistory() {
+  try {
+    // Connect to MongoDB if not already connected
+    if (!mongoClient) {
+      mongoClient = await MongoClient.connect(process.env.MONGODB_URI);
+    }
+
 const prompts = new Map([
   ['polymath', process.env.PROMPT_POLYMATH],
   ['all-known', process.env.PROMPT_ALL_KNOWN],
